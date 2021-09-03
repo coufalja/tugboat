@@ -18,12 +18,11 @@ import (
 	"github.com/cockroachdb/errors"
 
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/settings"
 	pb "github.com/coufalja/tugboat/raftpb"
 )
 
-var (
-	maxEntriesToApplySize = settings.Soft.MaxEntrySize
+const (
+	MaxEntrySize = 64 * 1024 * 1024
 )
 
 // ErrCompacted is the error returned to indicate that the requested entries
@@ -262,7 +261,7 @@ func (l *entryLog) hasMoreEntriesToApply(appliedTo uint64) bool {
 }
 
 func (l *entryLog) entriesToApply() ([]pb.Entry, error) {
-	return l.getEntriesToApply(maxEntriesToApplySize)
+	return l.getEntriesToApply(MaxEntrySize)
 }
 
 func (l *entryLog) getEntriesToApply(limit uint64) ([]pb.Entry, error) {

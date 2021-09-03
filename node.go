@@ -29,18 +29,18 @@ import (
 	"github.com/coufalja/tugboat/internal/raft"
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/transport"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
 )
 
-var (
-	incomingProposalsMaxLen = settings.Soft.IncomingProposalQueueLength
-	incomingReadIndexMaxLen = settings.Soft.IncomingReadIndexQueueLength
-	syncTaskInterval        = settings.Soft.SyncTaskInterval
-	lazyFreeCycle           = settings.Soft.LazyFreeCycle
+const (
+	incomingProposalsMaxLen uint64 = 2048
+	incomingReadIndexMaxLen uint64 = 4096
+	syncTaskInterval        uint64 = 180000
+	lazyFreeCycle           uint64 = 1
+	entryNonCmdFieldsSize   uint64 = 16 * 8
 )
 
 type pipeline interface {
@@ -402,7 +402,7 @@ func (n *node) payloadTooBig(sz int) bool {
 	if n.config.MaxInMemLogSize == 0 {
 		return false
 	}
-	return uint64(sz+settings.EntryNonCmdFieldsSize) > n.config.MaxInMemLogSize
+	return uint64(sz)+entryNonCmdFieldsSize > n.config.MaxInMemLogSize
 }
 
 func (n *node) propose(session *client.Session,

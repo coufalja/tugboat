@@ -16,14 +16,12 @@ package rsm
 
 import (
 	"sync"
-
-	"github.com/coufalja/tugboat/internal/settings"
 )
 
 var (
-	initialTaskQueueCap = settings.Soft.TaskQueueInitialCap
-	taskQueueBusyCap    = settings.Soft.TaskQueueTargetLength
-	emptyTask           = Task{}
+	initialTaskQueueCap uint64 = 24
+	taskQueueBusyCap    uint64 = 64
+	emptyTask                  = Task{}
 )
 
 // TaskQueue is a queue of tasks to be processed by the state machine.

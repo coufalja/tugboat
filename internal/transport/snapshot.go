@@ -39,15 +39,14 @@ import (
 	"github.com/cockroachdb/errors"
 
 	"github.com/coufalja/tugboat/internal/rsm"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 )
 
 var (
-	snapshotChunkSize  = settings.SnapshotChunkSize
-	maxConnectionCount = settings.Soft.MaxSnapshotConnections
+	snapshotChunkSize  uint64 = 2 * 1024 * 1024
+	maxConnectionCount uint64 = 64
 )
 
 // SendSnapshot asynchronously sends raft snapshot message to its target.

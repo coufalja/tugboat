@@ -10,8 +10,6 @@ import (
 	"io"
 	"time"
 	"unsafe"
-
-	"github.com/coufalja/tugboat/internal/settings"
 )
 
 const (
@@ -67,15 +65,17 @@ func (m *EntryBatch) SizeUpperLimit() (n int) {
 	if len(m.Entries) > 0 {
 		for _, e := range m.Entries {
 			l = e.SizeUpperLimit()
-			n += (l + 16)
+			n += l + 16
 		}
 	}
 	return n
 }
 
+const NonCmdFieldSize = 16 * 8
+
 // SizeUpperLimit returns the upper limit size of an entry.
 func (m *Entry) SizeUpperLimit() int {
-	l := settings.EntryNonCmdFieldsSize
+	l := NonCmdFieldSize
 	l += len(m.Cmd)
 	return l
 }

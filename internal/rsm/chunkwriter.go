@@ -21,7 +21,6 @@ import (
 
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
@@ -29,7 +28,7 @@ import (
 
 const (
 	// ChunkSize is the size of each snapshot chunk.
-	ChunkSize = settings.SnapshotChunkSize
+	ChunkSize uint64 = 2 * 1024 * 1024
 )
 
 var _ io.WriteCloser = (*ChunkWriter)(nil)

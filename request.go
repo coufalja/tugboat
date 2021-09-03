@@ -31,15 +31,14 @@ import (
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/rsm"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/logger"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
 )
 
-var (
+const (
 	defaultGCTick         uint64 = 2
-	pendingProposalShards        = settings.Soft.PendingProposalShards
+	pendingProposalShards uint64 = 16
 )
 
 var (

@@ -32,7 +32,6 @@ import (
 
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/id"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
 	"github.com/coufalja/tugboat/raftio"
@@ -213,7 +212,7 @@ func (c *Config) Validate() error {
 		plog.Warningf("ElectionRTT is not a magnitude larger than HeartbeatRTT")
 	}
 	if c.MaxInMemLogSize > 0 &&
-		c.MaxInMemLogSize < settings.EntryNonCmdFieldsSize+1 {
+		c.MaxInMemLogSize < pb.NonCmdFieldSize+1 {
 		return errors.New("MaxInMemLogSize is too small")
 	}
 	if c.SnapshotCompressionType != Snappy &&
@@ -549,11 +548,11 @@ func (c *NodeHostConfig) Validate() error {
 		}
 	}
 	if c.MaxSendQueueSize > 0 &&
-		c.MaxSendQueueSize < settings.EntryNonCmdFieldsSize+1 {
+		c.MaxSendQueueSize < pb.NonCmdFieldSize+1 {
 		return errors.New("MaxSendQueueSize value is too small")
 	}
 	if c.MaxReceiveQueueSize > 0 &&
-		c.MaxReceiveQueueSize < settings.EntryNonCmdFieldsSize+1 {
+		c.MaxReceiveQueueSize < pb.NonCmdFieldSize+1 {
 		return errors.New("MaxReceiveSize value is too small")
 	}
 	if c.RaftRPCFactory != nil && c.Expert.TransportFactory != nil {
@@ -715,7 +714,7 @@ func (c *NodeHostConfig) GetClientTLSConfig(target string) (*tls.Config, error) 
 // GetDeploymentID returns the deployment ID to be used.
 func (c *NodeHostConfig) GetDeploymentID() uint64 {
 	if c.DeploymentID == 0 {
-		return settings.UnmanagedDeploymentID
+		return 1
 	}
 	return c.DeploymentID
 }

@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"github.com/coufalja/tugboat/internal/fileutil"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/vfs"
 	pb "github.com/coufalja/tugboat/raftpb"
 )
@@ -39,7 +38,7 @@ const (
 	// DefaultVersion is the snapshot binary format version.
 	DefaultVersion SSVersion = V2
 	// HeaderSize is the size of snapshot in number of bytes.
-	HeaderSize = settings.SnapshotHeaderSize
+	HeaderSize uint64 = 1024
 	// which checksum type to use.
 	// CRC32IEEE and google's highway hash are supported
 	defaultChecksumType = pb.CRC32IEEE

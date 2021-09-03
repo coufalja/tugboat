@@ -31,7 +31,6 @@ import (
 	"github.com/lni/goutils/syncutil"
 
 	"github.com/coufalja/tugboat/config"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 )
@@ -39,19 +38,19 @@ import (
 var (
 	// ErrBadMessage is the error returned to indicate the incoming message is
 	// corrupted.
-	ErrBadMessage       = errors.New("invalid message")
-	errPoisonReceived   = errors.New("poison received")
-	magicNumber         = [2]byte{0xAE, 0x7D}
-	poisonNumber        = [2]byte{0x0, 0x0}
-	payloadBufferSize   = settings.SnapshotChunkSize + 1024*128
-	tlsHandshackTimeout = 10 * time.Second
-	magicNumberDuration = 1 * time.Second
-	headerDuration      = 2 * time.Second
-	readDuration        = 5 * time.Second
-	writeDuration       = 5 * time.Second
-	keepAlivePeriod     = 10 * time.Second
-	perConnBufSize      = settings.Soft.PerConnectionSendBufSize
-	recvBufSize         = settings.Soft.PerConnectionRecvBufSize
+	ErrBadMessage              = errors.New("invalid message")
+	errPoisonReceived          = errors.New("poison received")
+	magicNumber                = [2]byte{0xAE, 0x7D}
+	poisonNumber               = [2]byte{0x0, 0x0}
+	payloadBufferSize          = 2*1024*1024 + 1024*128
+	tlsHandshackTimeout        = 10 * time.Second
+	magicNumberDuration        = 1 * time.Second
+	headerDuration             = 2 * time.Second
+	readDuration               = 5 * time.Second
+	writeDuration              = 5 * time.Second
+	keepAlivePeriod            = 10 * time.Second
+	perConnBufSize      uint64 = 2 * 1024 * 1024
+	recvBufSize         uint64 = 2 * 1024 * 1024
 )
 
 const (

@@ -41,17 +41,16 @@ import (
 	"github.com/cockroachdb/errors"
 
 	"github.com/coufalja/tugboat/internal/fileutil"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/vfs"
 	pb "github.com/coufalja/tugboat/raftpb"
 )
 
 const (
-	blockSize = settings.SnapshotChunkSize
+	blockSize uint64 = 2 * 1024 * 1024
 )
 
 var (
-	writerMagicNumber = settings.BlockFileMagicNumber
+	writerMagicNumber = []byte{0x3F, 0x5B, 0xCB, 0xF1, 0xFA, 0xBA, 0x81, 0x9F}
 	tailSize          = uint64(16)
 	checksumSize      = uint64(4)
 )

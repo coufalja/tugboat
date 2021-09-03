@@ -32,7 +32,6 @@ import (
 
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/logger"
 	pb "github.com/coufalja/tugboat/raftpb"
 )
@@ -53,8 +52,7 @@ const (
 
 var (
 	emptyState     = pb.State{}
-	maxEntrySize   = settings.Soft.MaxEntrySize
-	inMemGcTimeout = settings.Soft.InMemGCTimeout
+	inMemGcTimeout = uint64(100)
 )
 
 // State is the state of a raft node defined in the raft thesis.
@@ -793,7 +791,7 @@ func (r *raft) sendReplicateMessage(to uint64) {
 	if rp.isPaused() {
 		return
 	}
-	m, err := r.makeReplicateMessage(to, rp.next, maxEntrySize)
+	m, err := r.makeReplicateMessage(to, rp.next, MaxEntrySize)
 	if err != nil {
 		// log not available due to compaction, send snapshot
 		if !rp.isActive() {
@@ -1374,7 +1372,7 @@ func (r *raft) getPendingConfigChangeCount() int {
 	idx := r.log.committed + 1
 	count := 0
 	for {
-		ents, err := r.log.entries(idx, maxEntriesToApplySize)
+		ents, err := r.log.entries(idx, MaxEntrySize)
 		if err != nil {
 			plog.Panicf("%s failed to get entries %v", r.describe(), err)
 		}

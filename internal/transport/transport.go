@@ -55,7 +55,6 @@ import (
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/invariants"
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
 	ct "github.com/coufalja/tugboat/plugin/chan"
@@ -64,17 +63,17 @@ import (
 )
 
 const (
-	maxMsgBatchSize = settings.MaxMessageBatchSize
+	maxMsgBatchSize = 64 * 1024 * 1024
 )
 
 var (
-	lazyFreeCycle = settings.Soft.LazyFreeCycle
+	lazyFreeCycle = 1
 )
 
 var (
 	plog                = logger.GetLogger("transport")
-	sendQueueLen        = settings.Soft.SendQueueLength
-	dialTimeoutSecond   = settings.Soft.GetConnectedTimeoutSecond
+	sendQueueLen        = 1024 * 2
+	dialTimeoutSecond   = 15
 	idleTimeout         = time.Minute
 	errChunkSendSkipped = errors.New("chunk skipped")
 	errBatchSendSkipped = errors.New("batch skipped")

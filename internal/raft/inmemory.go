@@ -16,13 +16,12 @@ package raft
 
 import (
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/settings"
 	pb "github.com/coufalja/tugboat/raftpb"
 )
 
-var (
-	entrySliceSize    = settings.Soft.InMemEntrySliceSize
-	minEntrySliceSize = settings.Soft.MinEntrySliceFreeSize
+const (
+	EntrySliceSize    = 512
+	MinEntrySliceSize = 96
 )
 
 // inMemory is a two stage in memory log storage struct to keep log entries
@@ -39,9 +38,6 @@ type inMemory struct {
 }
 
 func newInMemory(lastIndex uint64, rl *server.InMemRateLimiter) inMemory {
-	if minEntrySliceSize >= entrySliceSize {
-		panic("minEntrySliceSize >= entrySliceSize")
-	}
 	return inMemory{
 		markerIndex: lastIndex + 1,
 		savedTo:     lastIndex,
@@ -183,14 +179,14 @@ func (im *inMemory) tryResize() {
 }
 
 func (im *inMemory) resizeEntrySlice() {
-	toResize := cap(im.entries)-len(im.entries) < int(minEntrySliceSize)
+	toResize := cap(im.entries)-len(im.entries) < int(MinEntrySliceSize)
 	if im.shrunk && (len(im.entries) <= 1 || toResize) {
 		im.resize()
 	}
 }
 
 func (im *inMemory) newEntrySlice(ents []pb.Entry) []pb.Entry {
-	sz := max(entrySliceSize, uint64(len(ents)))
+	sz := max(EntrySliceSize, uint64(len(ents)))
 	newEntries := make([]pb.Entry, 0, sz)
 	newEntries = append(newEntries, ents...)
 	return newEntries

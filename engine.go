@@ -24,18 +24,17 @@ import (
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
 )
 
 var (
-	reloadTime           = settings.Soft.NodeReloadMillisecond
-	timedCloseWaitSecond = settings.Soft.CloseWorkerTimedWaitSecond
+	reloadTime           = 200
+	timedCloseWaitSecond = 5
 	timedCloseWait       = time.Second * time.Duration(timedCloseWaitSecond)
 	nodeReloadInterval   = time.Millisecond * time.Duration(reloadTime)
-	taskBatchSize        = settings.Soft.TaskBatchSize
+	taskBatchSize        = 512
 )
 
 type bitmap struct {

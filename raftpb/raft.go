@@ -23,15 +23,13 @@ import (
 	"github.com/lni/goutils/stringutil"
 
 	"github.com/coufalja/tugboat/client"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
 )
 
 var (
-	plog                = logger.GetLogger("raftpb")
-	panicOnSizeMismatch = settings.Soft.PanicOnSizeMismatch
-	emptyState          = State{}
+	plog       = logger.GetLogger("raftpb")
+	emptyState = State{}
 )
 
 const (
@@ -183,18 +181,12 @@ func (b *Bootstrap) Validate(nodes map[uint64]string,
 }
 
 func checkFileSize(path string, size uint64, fs vfs.IFS) {
-	var er func(format string, args ...interface{})
-	if panicOnSizeMismatch {
-		er = plog.Panicf
-	} else {
-		er = plog.Errorf
-	}
 	fi, err := fs.Stat(path)
 	if err != nil {
 		plog.Panicf("failed to access %s", path)
 	}
 	if size != uint64(fi.Size()) {
-		er("file %s size %d, expect %d", path, fi.Size(), size)
+		plog.Errorf("file %s size %d, expect %d", path, fi.Size(), size)
 	}
 }
 

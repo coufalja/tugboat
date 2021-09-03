@@ -31,7 +31,6 @@ import (
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/raft"
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/utils"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
@@ -47,7 +46,6 @@ var (
 	// ErrRestoreSnapshot indicates there is error when trying to restore
 	// from a snapshot
 	ErrRestoreSnapshot             = errors.New("failed to restore snapshot")
-	batchedEntryApply              = settings.Soft.BatchedEntryApply
 	sessionBufferInitialCap uint64 = 128 * 1024
 )
 
@@ -874,7 +872,6 @@ func getEntryTypes(entries []pb.Entry) (bool, bool) {
 }
 
 func (s *StateMachine) handle(t []Task, a []sm.Entry) error {
-	batch := batchedEntryApply && s.Concurrent()
 	for idx := range t {
 		if t[idx].IsSnapshotTask() || t[idx].isSyncTask() {
 			plog.Panicf("%s trying to handle a snapshot/sync request", s.id())
@@ -887,7 +884,7 @@ func (s *StateMachine) handle(t []Task, a []sm.Entry) error {
 			entries = pb.EntriesToApply(t[idx].Entries, s.index, false)
 		}()
 		update, noop := getEntryTypes(entries)
-		if batch && update && noop {
+		if s.Concurrent() && update && noop {
 			if err := s.handleBatch(entries, a); err != nil {
 				return err
 			}

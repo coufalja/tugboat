@@ -24,18 +24,14 @@ import (
 	"github.com/lni/goutils/cache"
 
 	"github.com/coufalja/tugboat/internal/fileutil"
-	"github.com/coufalja/tugboat/internal/settings"
 )
 
 const (
 	// EmptyClientSessionLength defines the length of an empty sessions instance.
 	EmptyClientSessionLength uint64 = 16
-)
-
-var (
 	// LRUMaxSessionCount is the largest number of client sessions that can be
 	// concurrently managed by a LRUSession instance.
-	LRUMaxSessionCount = settings.Hard.LRUMaxSessionCount
+	LRUMaxSessionCount = 4096
 )
 
 // GetEmptyLRUSession returns an marshaled empty sessions instance.

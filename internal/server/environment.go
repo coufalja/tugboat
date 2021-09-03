@@ -26,7 +26,6 @@ import (
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/id"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/utils"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
@@ -36,9 +35,6 @@ import (
 
 var (
 	plog = logger.GetLogger("server")
-	// ErrHardSettingChanged indicates that one or more of the hard settings
-	// changed.
-	ErrHardSettingChanged = errors.New("hard setting changed")
 	// ErrDirMarkedAsDeleted is the error used to indicate that the directory has
 	// been marked as deleted and can not be used again.
 	ErrDirMarkedAsDeleted = errors.New("trying to use a dir marked as deleted")
@@ -389,23 +385,14 @@ func (env *Env) check(cfg config.NodeHostConfig,
 			plog.Errorf("logdb binary ver changed, %d vs %d", s.BinVer, binVer)
 			return ErrIncompatibleData
 		}
-		if s.HardHash != 0 {
-			if s.HardHash != settings.HardHash(cfg.Expert.Engine.ExecShards,
-				cfg.Expert.LogDB.Shards, settings.Hard.LRUMaxSessionCount,
-				settings.Hard.LogDBEntryBatchSize) {
-				return ErrHardSettingsChanged
-			}
-		} else {
-			if s.StepWorkerCount != cfg.Expert.Engine.ExecShards ||
-				s.LogdbShardCount != cfg.Expert.LogDB.Shards ||
-				s.MaxSessionCount != settings.Hard.LRUMaxSessionCount ||
-				s.EntryBatchSize != settings.Hard.LogDBEntryBatchSize {
-				return ErrHardSettingChanged
-			}
-		}
 	}
 	return nil
 }
+
+const (
+	LRUMaxSessionCount  = 4096
+	LogDBEntryBatchSize = 48
+)
 
 func (env *Env) createFlagFile(cfg config.NodeHostConfig,
 	dir string, ver uint32, name string) error {
@@ -418,8 +405,8 @@ func (env *Env) createFlagFile(cfg config.NodeHostConfig,
 		DeploymentId:        cfg.GetDeploymentID(),
 		StepWorkerCount:     cfg.Expert.Engine.ExecShards,
 		LogdbShardCount:     cfg.Expert.LogDB.Shards,
-		MaxSessionCount:     settings.Hard.LRUMaxSessionCount,
-		EntryBatchSize:      settings.Hard.LogDBEntryBatchSize,
+		MaxSessionCount:     LRUMaxSessionCount,
+		EntryBatchSize:      LogDBEntryBatchSize,
 		AddressByNodeHostId: cfg.AddressByNodeHostID,
 	}
 	return fileutil.CreateFlagFile(dir, flagFilename, &s, env.fs)

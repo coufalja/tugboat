@@ -75,7 +75,6 @@ import (
 	"github.com/coufalja/tugboat/internal/logdb"
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/transport"
 	"github.com/coufalja/tugboat/internal/utils"
 	"github.com/coufalja/tugboat/internal/vfs"
@@ -95,10 +94,10 @@ const (
 	DEVVersion = true
 )
 
-var (
-	receiveQueueLen   = settings.Soft.ReceiveQueueLength
-	requestPoolShards = settings.Soft.NodeHostRequestStatePoolShards
-	streamConnections = settings.Soft.StreamConnections
+const (
+	receiveQueueLen   = 1024
+	requestPoolShards = 8
+	streamConnections = 4
 )
 
 var (

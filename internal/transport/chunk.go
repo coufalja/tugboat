@@ -26,7 +26,6 @@ import (
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/utils"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
@@ -36,10 +35,10 @@ import (
 var (
 	// ErrSnapshotOutOfDate is returned when the snapshot being received is
 	// considered as out of date.
-	ErrSnapshotOutOfDate     = errors.New("snapshot is out of date")
-	gcIntervalTick           = settings.Soft.SnapshotGCTick
-	snapshotChunkTimeoutTick = settings.Soft.SnapshotChunkTimeoutTick
-	maxConcurrentSlot        = settings.Soft.MaxConcurrentStreamingSnapshot
+	ErrSnapshotOutOfDate            = errors.New("snapshot is out of date")
+	gcIntervalTick           uint64 = 30
+	snapshotChunkTimeoutTick uint64 = 900
+	maxConcurrentSlot        uint64 = 128
 )
 
 var firstError = utils.FirstError
