@@ -113,7 +113,7 @@ func (u *Update) MarshalTo(buf []byte) (int, error) {
 			return 0, err
 		}
 		binary.LittleEndian.PutUint32(buf[offset:], uint32(n))
-		offset += (n + 4)
+		offset += n + 4
 	}
 	binary.LittleEndian.PutUint32(buf[offset:], uint32(len(u.EntriesToSave)))
 	offset += 4
@@ -123,7 +123,7 @@ func (u *Update) MarshalTo(buf []byte) (int, error) {
 			return 0, err
 		}
 		binary.LittleEndian.PutUint32(buf[offset:], uint32(n))
-		offset += (n + 4)
+		offset += n + 4
 	}
 	if IsEmptySnapshot(u.Snapshot) {
 		buf[offset] = 0
@@ -136,7 +136,7 @@ func (u *Update) MarshalTo(buf []byte) (int, error) {
 			return 0, err
 		}
 		binary.LittleEndian.PutUint32(buf[offset:], uint32(n))
-		offset += (n + 4)
+		offset += n + 4
 	}
 	return offset, nil
 }
@@ -152,7 +152,7 @@ func (u *Update) Unmarshal(buf []byte) error {
 		if err := u.State.Unmarshal(buf[offset+4 : offset+4+int(l)]); err != nil {
 			return err
 		}
-		offset += (4 + int(l))
+		offset += 4 + int(l)
 	}
 	count := binary.LittleEndian.Uint32(buf[offset:])
 	offset += 4
@@ -166,7 +166,7 @@ func (u *Update) Unmarshal(buf []byte) error {
 			return err
 		}
 		u.EntriesToSave[i] = entry
-		offset += (4 + int(l))
+		offset += 4 + int(l)
 	}
 	if buf[offset] == 1 {
 		offset++

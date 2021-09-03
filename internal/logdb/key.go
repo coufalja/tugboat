@@ -27,7 +27,7 @@ const (
 	nodeInfoKeySize        uint64 = 20
 	bootstrapKeySize       uint64 = 20
 	snapshotKeySize        uint64 = 28
-	dataSize               uint64 = entryKeySize
+	dataSize                      = entryKeySize
 )
 
 var (

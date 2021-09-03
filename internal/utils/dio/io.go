@@ -29,10 +29,10 @@ type CompressionType = pb.CompressionType
 const (
 	// NoCompression is the CompressionType value used to indicate not to use
 	// any compression.
-	NoCompression CompressionType = pb.NoCompression
+	NoCompression = pb.NoCompression
 	// Snappy is the CompressionType value used to indicate that google snappy
 	// is used for data compression.
-	Snappy CompressionType = pb.Snappy
+	Snappy = pb.Snappy
 )
 
 // CountedWriter is a io.WriteCloser wrapper that keeps the total number of bytes

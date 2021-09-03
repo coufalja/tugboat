@@ -1209,7 +1209,7 @@ func (m *MessageBatch) Unmarshal(dAtA []byte) error {
 // SizeUpperLimit returns the upper limit size of the message.
 func (m *Message) SizeUpperLimit() int {
 	l := 0
-	l += (16 * 12)
+	l += 16 * 12
 	l += m.Snapshot.Size()
 	if len(m.Entries) > 0 {
 		for _, e := range m.Entries {

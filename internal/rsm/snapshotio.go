@@ -36,7 +36,7 @@ const (
 	// V2 is the value of snapshot version 2.
 	V2 SSVersion = 2
 	// DefaultVersion is the snapshot binary format version.
-	DefaultVersion SSVersion = V2
+	DefaultVersion = V2
 	// HeaderSize is the size of snapshot in number of bytes.
 	HeaderSize uint64 = 1024
 	// which checksum type to use.

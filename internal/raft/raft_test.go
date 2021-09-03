@@ -15,12 +15,13 @@
 package raft
 
 import (
-	"github.com/coufalja/tugboat/config"
-	"github.com/coufalja/tugboat/internal/settings"
 	"math"
 	"reflect"
 	"sort"
 	"testing"
+
+	"github.com/coufalja/tugboat/config"
+	"github.com/coufalja/tugboat/internal/settings"
 
 	"github.com/coufalja/tugboat/internal/server"
 	pb "github.com/coufalja/tugboat/raftpb"
