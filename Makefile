@@ -22,10 +22,7 @@ PKGROOT=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 # name of the package
 PKGNAME=$(shell go list)
 
-ifeq ($(DRAGONBOAT_LOGDB),rocksdb)
-LOGDB_TAG=dragonboat_rocksdb_test
-$(info using rocksdb based log storage)
-else ifeq ($(DRAGONBOAT_LOGDB),)
+ifeq ($(DRAGONBOAT_LOGDB),)
 ifneq ($(MEMFS_TEST),)
 $(info using memfs based pebble)
 LOGDB_TAG=dragonboat_memfs_test

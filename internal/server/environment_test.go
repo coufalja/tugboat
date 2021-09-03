@@ -323,29 +323,3 @@ func TestWALDirCanBeSet(t *testing.T) {
 		t.Errorf("wal dir appeared in node host dir, %s", dir)
 	}
 }
-
-func TestCompatibleLogDBType(t *testing.T) {
-	tests := []struct {
-		saved      string
-		name       string
-		compatible bool
-	}{
-		{"sharded-rocksdb", "sharded-pebble", true},
-		{"sharded-pebble", "sharded-rocksdb", true},
-		{"pebble", "rocksdb", true},
-		{"rocksdb", "pebble", true},
-		{"pebble", "tee", false},
-		{"tee", "pebble", false},
-		{"rocksdb", "tee", false},
-		{"tee", "rocksdb", false},
-		{"tee", "tee", true},
-		{"", "tee", false},
-		{"tee", "", false},
-		{"tee", "inmem", false},
-	}
-	for idx, tt := range tests {
-		if r := compatibleLogDBType(tt.saved, tt.name); r != tt.compatible {
-			t.Errorf("%d, compatibleLogDBType failed, want %t, got %t", idx, tt.compatible, r)
-		}
-	}
-}

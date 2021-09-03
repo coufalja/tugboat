@@ -4289,64 +4289,6 @@ func TestRaftEventsAreReported(t *testing.T) {
 	runNodeHostTest(t, to, fs)
 }
 
-func TestV2DataCanBeHandled(t *testing.T) {
-	fs := vfs.GetTestFS()
-	if vfs.GetTestFS() != vfs.DefaultFS {
-		t.Skip("skipped as not using the default fs")
-	}
-	v2datafp := "internal/logdb/testdata/v2-rocksdb-batched.tar.bz2"
-	targetDir := "test-v2-data-safe-to-remove"
-	if err := fs.RemoveAll(targetDir); err != nil {
-		t.Fatalf("%v", err)
-	}
-	defer func() {
-		if err := fs.RemoveAll(targetDir); err != nil {
-			t.Fatalf("%v", err)
-		}
-	}()
-	topDirName := "single_nodehost_test_dir_safe_to_delete"
-	testHostname := "lindfield.local"
-	if err := fileutil.ExtractTarBz2(v2datafp, targetDir, fs); err != nil {
-		t.Fatalf("%v", err)
-	}
-	hostname, err := os.Hostname()
-	if err != nil {
-		t.Fatalf("failed to get hostname %v", err)
-	}
-	testPath := fs.PathJoin(targetDir, topDirName, testHostname)
-	expPath := fs.PathJoin(targetDir, topDirName, hostname)
-	if expPath != testPath {
-		if err := fs.Rename(testPath, expPath); err != nil {
-			t.Fatalf("failed to rename the dir %v", err)
-		}
-	}
-	v2dataDir := fs.PathJoin(targetDir, topDirName)
-	to := &testOption{
-		noElection: true,
-		updateNodeHostConfig: func(c *config.NodeHostConfig) *config.NodeHostConfig {
-			c.WALDir = v2dataDir
-			c.NodeHostDir = v2dataDir
-			return c
-		},
-		tf: func(nh *NodeHost) {
-			name := nh.mu.logdb.Name()
-			if name != "sharded-pebble" && name != "sharded-rocksdb" {
-				// v2-rocksdb-batched.tar.bz2 contains rocksdb format data
-				t.Skip("skipped as not using rocksdb")
-			}
-			logdb := nh.mu.logdb
-			rs, err := logdb.ReadRaftState(2, 1, 0)
-			if err != nil {
-				t.Fatalf("failed to get raft state %v", err)
-			}
-			if rs.EntryCount != 3 || rs.State.Commit != 3 {
-				t.Errorf("unexpected rs value")
-			}
-		},
-	}
-	runNodeHostTest(t, to, fs)
-}
-
 func TestSnapshotCanBeCompressed(t *testing.T) {
 	fs := vfs.GetTestFS()
 	to := &testOption{

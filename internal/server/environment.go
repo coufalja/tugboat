@@ -338,10 +338,7 @@ func compatibleLogDBType(saved string, name string) bool {
 	if saved == name {
 		return true
 	}
-	return (saved == "rocksdb" && name == "pebble") ||
-		(saved == "pebble" && name == "rocksdb") ||
-		(saved == "sharded-pebble" && name == "sharded-rocksdb") ||
-		(saved == "sharded-rocksdb" && name == "sharded-pebble")
+	return name == "pebble" || saved == "pebble" || saved == "sharded-pebble" || name == "sharded-pebble"
 }
 
 func (env *Env) check(cfg config.NodeHostConfig,

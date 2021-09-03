@@ -81,7 +81,6 @@ jobs:
         go get -u github.com/kisielk/errcheck
         go get -u golang.org/x/lint/golint
         go get -u github.com/gordonklaus/ineffassign
-        sudo apt-get install librocksdb-dev
      - name: Checkout code
        uses: actions/checkout@v2
      - name: Static check

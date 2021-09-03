@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build !dragonboat_rocksdb_test && !dragonboat_memfs_test
-// +build !dragonboat_rocksdb_test,!dragonboat_memfs_test
+//go:build !dragonboat_memfs_test
+// +build !dragonboat_memfs_test
 
 package logdb
 
@@ -22,11 +22,6 @@ import (
 	"github.com/coufalja/tugboat/internal/logdb/kv"
 	"github.com/coufalja/tugboat/internal/logdb/kv/pebble"
 	"github.com/coufalja/tugboat/internal/vfs"
-)
-
-const (
-	// DefaultKVStoreTypeName is the type name of the default kv store
-	DefaultKVStoreTypeName = "rocksdb"
 )
 
 func newDefaultKVStore(config config.LogDBConfig,
