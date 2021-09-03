@@ -524,26 +524,6 @@ func BenchmarkLookup(b *testing.B) {
 	}
 }
 
-func BenchmarkNALookup(b *testing.B) {
-	b.ReportAllocs()
-	b.StopTimer()
-	ds := &tests.NoOP{}
-	done := make(chan struct{})
-	config := config.Config{ClusterID: 1, NodeID: 1}
-	nds := rsm.NewNativeSM(config, rsm.NewInMemStateMachine(ds), done)
-	input := make([]byte, 1)
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		result, err := nds.NALookup(input)
-		if err != nil {
-			b.Fatalf("lookup failed %v", err)
-		}
-		if len(result) != 1 {
-			b.Fatalf("unexpected result")
-		}
-	}
-}
-
 func benchmarkStateMachineStep(b *testing.B, sz int, noopSession bool) {
 	b.ReportAllocs()
 	b.StopTimer()

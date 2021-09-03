@@ -103,7 +103,4 @@ func TestLookupWillFailOnClosedStateMachine(t *testing.T) {
 	if _, err := sm.Lookup(nil); err != ErrClusterClosed {
 		t.Errorf("failed to return ErrClusterClosed")
 	}
-	if _, err := sm.NALookup(nil); err != ErrClusterClosed {
-		t.Errorf("failed to return ErrClusterClosed")
-	}
 }
