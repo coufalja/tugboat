@@ -13,7 +13,7 @@
 # limitations under the License.
 
 GOEXEC ?= go
-# Dragonboat is known to work on - 
+# Dragonboat is known to work on -
 # Linux AMD64, Linux ARM64, MacOS, Windows/MinGW and FreeBSD AMD64
 # only Linux AMD64 is officially supported
 OS := $(shell uname)
@@ -99,11 +99,11 @@ TEST_OPTIONS=test $(GOCMDTAGS) -timeout=2400s -count=1 $(VERBOSE) \
   $(RACE_DETECTOR_FLAG) $(COVER_FLAG) $(SELECTED_TEST_OPTION)
 .PHONY: dragonboat-test
 dragonboat-test: test-raft test-raftpb test-rsm test-logdb test-transport    \
-	test-multiraft test-config test-client test-server test-tools test-fs   	 \
+	test-multiraft test-config test-client test-server test-fs   	 \
 	test-id test-utils
 .PHONY: ci-test
 ci-test: test-raft test-raftpb test-rsm test-logdb test-transport 		       \
-  test-config test-client test-server test-tests test-tools test-fs 				 \
+  test-config test-client test-server test-tests test-fs 				 \
 	test-id test-utils
 .PHONY: test
 test: dragonboat-test test-tests
@@ -117,10 +117,10 @@ actions-test: ci-test test-cov
 ###############################################################################
 .PHONY: unit-test-bin
 unit-test-bin: TEST_OPTIONS=test -c -o $@.bin -tags=$(TESTTAGS) 						 \
-	-count=1 $(VERBOSE) $(RACE_DETECTOR_FLAG) $(SELECTED_TEST_OPTION) 
+	-count=1 $(VERBOSE) $(RACE_DETECTOR_FLAG) $(SELECTED_TEST_OPTION)
 .PHONY: unit-test-bin
 unit-test-bin: test-raft test-raftpb test-rsm test-logdb test-transport 		 \
-  test-multiraft test-config test-client test-server test-tools test-plugins \
+  test-multiraft test-config test-client test-server test-plugins \
 	test-tests test-fs test-id test-utils
 
 ###############################################################################
@@ -174,9 +174,6 @@ test-tests:
 .PHONY: test-fs
 test-fs:
 	$(GOTEST) $(PKGNAME)/internal/fileutil
-.PHONY: test-tools
-test-tools:
-	$(GOTEST) $(PKGNAME)/tools
 .PHONY: test-id
 test-id:
 	$(GOTEST) $(PKGNAME)/internal/id
@@ -186,16 +183,6 @@ test-utils:
 .PHONY: test-cov
 test-cov:
 	$(GOTEST) -coverprofile=coverage.txt -covermode=atomic
-
-###############################################################################
-# tools
-###############################################################################
-.PHONY: tools
-tools: tools-checkdisk
-
-.PHONY: tools-checkdisk
-tools-checkdisk:
-	$(GO) build $(PKGNAME)/tools/checkdisk
 
 ###############################################################################
 # static checks
@@ -231,7 +218,7 @@ extra-static-check:
 .PHONY: clean
 clean:
 	@find . -type d -name "*safe_to_delete" -print | xargs rm -rf
-	@rm -f gitversion.go 
+	@rm -f gitversion.go
 	@rm -f test-*.*
 	@rm -f checkdisk
 	@$(GO) clean -i -testcache $(PKG)
