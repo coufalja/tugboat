@@ -44,7 +44,7 @@ import (
 	pb "github.com/coufalja/tugboat/raftpb"
 )
 
-var (
+const (
 	snapshotChunkSize  uint64 = 2 * 1024 * 1024
 	maxConnectionCount uint64 = 64
 )

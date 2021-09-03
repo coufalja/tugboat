@@ -29,7 +29,6 @@ import (
 	"github.com/coufalja/tugboat/internal/logdb"
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/tests"
 	"github.com/coufalja/tugboat/internal/transport"
 	"github.com/coufalja/tugboat/internal/utils/dio"
@@ -425,8 +424,8 @@ func benchmarkTransport(b *testing.B, sz int) {
 	if err != nil {
 		b.Fatalf("failed to new context %v", err)
 	}
-	nodes1 := transport.NewNodeRegistry(settings.Soft.StreamConnections, nil)
-	nodes2 := transport.NewNodeRegistry(settings.Soft.StreamConnections, nil)
+	nodes1 := transport.NewNodeRegistry(streamConnections, nil)
+	nodes2 := transport.NewNodeRegistry(streamConnections, nil)
 	nodes1.Add(1, 2, addr2)
 	handler1 := &benchmarkMessageHandler{
 		ch:       make(chan struct{}, 1),

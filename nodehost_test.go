@@ -43,10 +43,8 @@ import (
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/id"
 	"github.com/coufalja/tugboat/internal/invariants"
-	"github.com/coufalja/tugboat/internal/logdb"
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/tests"
 	"github.com/coufalja/tugboat/internal/transport"
 	"github.com/coufalja/tugboat/internal/vfs"
@@ -609,7 +607,7 @@ func createProposalsToTriggerSnapshot(t *testing.T,
 			}
 			t.Fatalf("unexpected error %v", err)
 		}
-		//time.Sleep(100 * time.Millisecond)
+		// time.Sleep(100 * time.Millisecond)
 		if err := nh.SyncCloseSession(ctx, cs); err != nil {
 			if err == ErrTimeout {
 				cancel()
@@ -4061,101 +4059,6 @@ func (t *testLogDBFactory2) Name() string {
 	return t.name
 }
 
-func TestNodeHostReturnsErrLogDBBrokenChangeWhenLogDBTypeChanges(t *testing.T) {
-	fs := vfs.GetTestFS()
-	bff := func(config config.NodeHostConfig, cb config.LogDBCallback,
-		dirs []string, lldirs []string) (raftio.ILogDB, error) {
-		return logdb.NewDefaultBatchedLogDB(config, cb, dirs, lldirs)
-	}
-	nff := func(config config.NodeHostConfig, cb config.LogDBCallback,
-		dirs []string, lldirs []string) (raftio.ILogDB, error) {
-		return logdb.NewDefaultLogDB(config, cb, dirs, lldirs)
-	}
-	to := &testOption{
-		at: func(*NodeHost) {
-			nhc := getTestNodeHostConfig(fs)
-			nhc.Expert.LogDBFactory = &testLogDBFactory2{f: nff}
-			if _, err := NewNodeHost(*nhc); err != server.ErrLogDBBrokenChange {
-				t.Errorf("failed to return ErrLogDBBrokenChange")
-			}
-		},
-		updateNodeHostConfig: func(c *config.NodeHostConfig) *config.NodeHostConfig {
-			c.Expert.LogDBFactory = &testLogDBFactory2{f: bff}
-			return c
-		},
-		noElection: true,
-	}
-	runNodeHostTest(t, to, fs)
-}
-
-func TestNodeHostByDefaultUsePlainEntryLogDB(t *testing.T) {
-	fs := vfs.GetTestFS()
-	bff := func(config config.NodeHostConfig, cb config.LogDBCallback,
-		dirs []string, lldirs []string) (raftio.ILogDB, error) {
-		return logdb.NewDefaultBatchedLogDB(config, cb, dirs, lldirs)
-	}
-	nff := func(config config.NodeHostConfig, cb config.LogDBCallback,
-		dirs []string, lldirs []string) (raftio.ILogDB, error) {
-		return logdb.NewDefaultLogDB(config, cb, dirs, lldirs)
-	}
-	to := &testOption{
-		updateNodeHostConfig: func(c *config.NodeHostConfig) *config.NodeHostConfig {
-			c.Expert.LogDBFactory = &testLogDBFactory2{f: nff}
-			return c
-		},
-		noElection: true,
-		at: func(*NodeHost) {
-			nhc := getTestNodeHostConfig(fs)
-			nhc.Expert.LogDBFactory = &testLogDBFactory2{f: bff}
-			if _, err := NewNodeHost(*nhc); err != server.ErrIncompatibleData {
-				t.Errorf("failed to return server.ErrIncompatibleData")
-			}
-		},
-	}
-	runNodeHostTest(t, to, fs)
-}
-
-func TestNodeHostByDefaultChecksWhetherToUseBatchedLogDB(t *testing.T) {
-	fs := vfs.GetTestFS()
-	bff := func(config config.NodeHostConfig, cb config.LogDBCallback,
-		dirs []string, lldirs []string) (raftio.ILogDB, error) {
-		return logdb.NewDefaultBatchedLogDB(config, cb, dirs, lldirs)
-	}
-	nff := func(config config.NodeHostConfig, cb config.LogDBCallback,
-		dirs []string, lldirs []string) (raftio.ILogDB, error) {
-		return logdb.NewDefaultLogDB(config, cb, dirs, lldirs)
-	}
-	to := &testOption{
-		updateNodeHostConfig: func(c *config.NodeHostConfig) *config.NodeHostConfig {
-			c.Expert.LogDBFactory = &testLogDBFactory2{f: bff}
-			return c
-		},
-		createSM: func(uint64, uint64) sm.IStateMachine {
-			return &PST{}
-		},
-		tf: func(nh *NodeHost) {
-			pto := pto(nh)
-			cs := nh.GetNoOPSession(1)
-			ctx, cancel := context.WithTimeout(context.Background(), pto)
-			_, err := nh.SyncPropose(ctx, cs, []byte("test-data"))
-			cancel()
-			if err != nil {
-				t.Errorf("failed to make proposal %v", err)
-			}
-		},
-		at: func(*NodeHost) {
-			nhc := getTestNodeHostConfig(fs)
-			nhc.Expert.LogDBFactory = &testLogDBFactory2{f: nff}
-			if nh, err := NewNodeHost(*nhc); err != nil {
-				t.Errorf("failed to create node host")
-			} else {
-				nh.Close()
-			}
-		},
-	}
-	runNodeHostTest(t, to, fs)
-}
-
 func TestNodeHostWithUnexpectedDeploymentIDWillBeDetected(t *testing.T) {
 	fs := vfs.GetTestFS()
 	to := &testOption{
@@ -5146,7 +5049,7 @@ func (s *stressRSM) Lookup(interface{}) (interface{}, error) {
 
 func (s *stressRSM) SaveSnapshot(w io.Writer,
 	f sm.ISnapshotFileCollection, c <-chan struct{}) error {
-	data := make([]byte, settings.SnapshotChunkSize*3)
+	data := make([]byte, 2*1024*1024*3)
 	_, err := w.Write(data)
 	return err
 }
@@ -5154,9 +5057,9 @@ func (s *stressRSM) SaveSnapshot(w io.Writer,
 func (s *stressRSM) RecoverFromSnapshot(r io.Reader,
 	f []sm.SnapshotFile, c <-chan struct{}) error {
 	plog.Infof("RecoverFromSnapshot called")
-	data := make([]byte, settings.SnapshotChunkSize*3)
+	data := make([]byte, 2*1024*1024*3)
 	n, err := io.ReadFull(r, data)
-	if uint64(n) != settings.SnapshotChunkSize*3 {
+	if uint64(n) != 2*1024*1024*3 {
 		return errors.New("unexpected size")
 	}
 	return err

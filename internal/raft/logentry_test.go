@@ -103,9 +103,9 @@ func TestLogIterateOnReadyToBeAppliedEntries(t *testing.T) {
 	for i := uint64(1); i <= 128; i++ {
 		ents = append(ents, pb.Entry{Index: i, Term: i})
 	}
-	ents[10].Cmd = make([]byte, maxEntriesToApplySize)
-	ents[20].Cmd = make([]byte, maxEntriesToApplySize)
-	ents[30].Cmd = make([]byte, maxEntriesToApplySize*2)
+	ents[10].Cmd = make([]byte, MaxEntrySize)
+	ents[20].Cmd = make([]byte, MaxEntrySize)
+	ents[30].Cmd = make([]byte, MaxEntrySize*2)
 	logdb := NewTestLogDB()
 	if err := logdb.Append(ents); err != nil {
 		t.Fatalf("%v", err)
@@ -116,7 +116,7 @@ func TestLogIterateOnReadyToBeAppliedEntries(t *testing.T) {
 	results := make([]pb.Entry, 0)
 	count := 0
 	for {
-		re, err := el.getEntriesToApply(maxEntriesToApplySize)
+		re, err := el.getEntriesToApply(MaxEntrySize)
 		if err != nil {
 			t.Fatalf("unexpected error %v", err)
 		}

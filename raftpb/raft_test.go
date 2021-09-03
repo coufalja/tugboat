@@ -527,7 +527,6 @@ func TestMessageCanDrop(t *testing.T) {
 		{HeartbeatResp, true},
 		{ReadIndex, true},
 		{ReadIndexResp, true},
-		{Quiesce, true},
 		{SnapshotReceived, true},
 		{LeaderTransfer, true},
 		{TimeoutNow, true},

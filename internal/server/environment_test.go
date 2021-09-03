@@ -21,7 +21,6 @@ import (
 
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/fileutil"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	"github.com/coufalja/tugboat/raftpb"
@@ -73,11 +72,8 @@ func TestCheckNodeHostDirWorksWhenEverythingMatches(t *testing.T) {
 			DeploymentID: testDeploymentID,
 		}
 		status := raftpb.RaftDataStatus{
-			Address: testAddress,
-			BinVer:  raftio.LogDBBinVersion,
-			HardHash: settings.HardHash(cfg.Expert.Engine.ExecShards,
-				cfg.Expert.LogDB.Shards, settings.Hard.LRUMaxSessionCount,
-				settings.Hard.LogDBEntryBatchSize),
+			Address:      testAddress,
+			BinVer:       raftio.LogDBBinVersion,
 			LogdbType:    testName,
 			Hostname:     env.hostname,
 			DeploymentId: testDeploymentID,
@@ -119,11 +115,8 @@ func TestRaftAddressIsAllowedToChangeWhenRequested(t *testing.T) {
 		RaftAddress:  "addr1:12345",
 	}
 	status := raftpb.RaftDataStatus{
-		Address: "addr2:54321",
-		BinVer:  binVer,
-		HardHash: settings.HardHash(cfg.Expert.Engine.ExecShards,
-			cfg.Expert.LogDB.Shards, settings.Hard.LRUMaxSessionCount,
-			settings.Hard.LogDBEntryBatchSize),
+		Address:   "addr2:54321",
+		BinVer:    binVer,
 		LogdbType: testLogDBName,
 		Hostname:  hostname,
 	}
@@ -170,11 +163,8 @@ func testNodeHostDirectoryDetectsMismatches(t *testing.T,
 	}
 
 	status := raftpb.RaftDataStatus{
-		Address: addr,
-		BinVer:  binVer,
-		HardHash: settings.HardHash(cfg.Expert.Engine.ExecShards,
-			cfg.Expert.LogDB.Shards, settings.Hard.LRUMaxSessionCount,
-			settings.Hard.LogDBEntryBatchSize),
+		Address:             addr,
+		BinVer:              binVer,
 		LogdbType:           name,
 		Hostname:            hostname,
 		AddressByNodeHostId: false,

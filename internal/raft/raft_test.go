@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/coufalja/tugboat/config"
-	"github.com/coufalja/tugboat/internal/settings"
 
 	"github.com/coufalja/tugboat/internal/server"
 	pb "github.com/coufalja/tugboat/raftpb"
@@ -109,7 +108,7 @@ func TestConfigViolationWillPanic(t *testing.T) {
 		{"Too low election rtt", newTestConfig(1, 3, 2), true},
 		{"Good config", newTestConfig(1, 10, 1), false},
 		{"Rate limit too small", newRateLimitedTestConfig(1, 10, 1, 15), true},
-		{"Good rate limit config", newRateLimitedTestConfig(1, 10, 1, settings.EntryNonCmdFieldsSize+5), false},
+		{"Good rate limit config", newRateLimitedTestConfig(1, 10, 1, 16*8+5), false},
 	}
 
 	for _, test := range tests {
@@ -1400,7 +1399,6 @@ func TestIsLeaderMessage(t *testing.T) {
 		{pb.HeartbeatResp, false},
 		{pb.ReadIndex, false},
 		{pb.ReadIndexResp, true},
-		{pb.Quiesce, false},
 		{pb.ConfigChangeEvent, false},
 		{pb.Ping, false},
 		{pb.Pong, false},
@@ -1977,7 +1975,7 @@ func TestGetPendingConfigChangeCount(t *testing.T) {
 	ne(r.becomeLeader(), t)
 	for i := 0; i < 5; i++ {
 		ents := []pb.Entry{
-			{Type: pb.ApplicationEntry, Cmd: make([]byte, maxEntriesToApplySize)},
+			{Type: pb.ApplicationEntry, Cmd: make([]byte, MaxEntrySize)},
 			{Type: pb.ConfigChangeEntry},
 		}
 		ne(r.appendEntries(ents), t)
@@ -3208,7 +3206,7 @@ func TestInMemoryEntriesSliceCanBeResized(t *testing.T) {
 	for i := uint64(0); i < inMemGcTimeout; i++ {
 		ne(r.tick(), t)
 	}
-	if uint64(cap(r.log.inmem.entries)) != entrySliceSize {
+	if uint64(cap(r.log.inmem.entries)) != EntrySliceSize {
 		t.Errorf("not resized")
 	}
 }
@@ -3220,7 +3218,7 @@ func TestFirstQuiescedTickResizesInMemoryEntriesSlice(t *testing.T) {
 		t.Errorf("unexpected cap val: %d", oldcap)
 	}
 	r.quiescedTick()
-	if uint64(cap(r.log.inmem.entries)) != entrySliceSize {
+	if uint64(cap(r.log.inmem.entries)) != EntrySliceSize {
 		t.Errorf("not resized, cap: %d", oldcap)
 	}
 	r.log.inmem.entries = make([]pb.Entry, 0)

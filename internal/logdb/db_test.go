@@ -58,7 +58,7 @@ func getDirSize(path string, includeLogSize bool, fs vfs.IFS) (int64, error) {
 	return size, err
 }
 
-func getNewTestDB(dir string, lldir string, batched bool, fs vfs.IFS) raftio.ILogDB {
+func getNewTestDB(dir string, lldir string, fs vfs.IFS) raftio.ILogDB {
 	d := fs.PathJoin(RDBTestDirectory, dir)
 	lld := fs.PathJoin(RDBTestDirectory, lldir)
 	if err := fileutil.MkdirAll(d, fs); err != nil {
@@ -75,7 +75,7 @@ func getNewTestDB(dir string, lldir string, batched bool, fs vfs.IFS) raftio.ILo
 	}
 
 	db, err := NewLogDB(cfg, nil,
-		[]string{d}, []string{lld}, batched, false, newDefaultKVStore)
+		[]string{d}, []string{lld}, false, newDefaultKVStore)
 	if err != nil {
 		panic(err)
 	}
@@ -89,7 +89,7 @@ func deleteTestDB(fs vfs.IFS) {
 }
 
 func runLogDBTestAs(t *testing.T,
-	batched bool, tf func(t *testing.T, db raftio.ILogDB), fs vfs.IFS) {
+	tf func(t *testing.T, db raftio.ILogDB), fs vfs.IFS) {
 	defer leaktest.AfterTest(t)()
 	dir := "db-dir"
 	lldir := "wal-db-dir"
@@ -101,19 +101,14 @@ func runLogDBTestAs(t *testing.T,
 	if err := fs.RemoveAll(lld); err != nil {
 		t.Fatalf("%v", err)
 	}
-	db := getNewTestDB(dir, lldir, batched, fs)
+	db := getNewTestDB(dir, lldir, fs)
 	defer deleteTestDB(fs)
 	defer db.Close()
 	tf(t, db)
 }
 
 func runLogDBTest(t *testing.T, tf func(t *testing.T, db raftio.ILogDB), fs vfs.IFS) {
-	runLogDBTestAs(t, false, tf, fs)
-	runLogDBTestAs(t, true, tf, fs)
-}
-
-func runBatchedLogDBTest(t *testing.T, tf func(t *testing.T, db raftio.ILogDB), fs vfs.IFS) {
-	runLogDBTestAs(t, true, tf, fs)
+	runLogDBTestAs(t, tf, fs)
 }
 
 func TestRDBReturnErrNoBootstrapInfoWhenNoBootstrap(t *testing.T) {
@@ -1086,7 +1081,7 @@ func TestRemoveEntriesTo(t *testing.T) {
 	maxIndex := uint64(1024)
 	skipSizeCheck := false
 	func() {
-		db := getNewTestDB(dir, lldir, false, fs)
+		db := getNewTestDB(dir, lldir, fs)
 		sdb, ok := db.(*ShardedDB)
 		if !ok {
 			t.Fatalf("failed to get sdb")

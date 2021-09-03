@@ -34,7 +34,6 @@ import (
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	"github.com/coufalja/tugboat/raftpb"
@@ -316,7 +315,7 @@ func (h *testMessageHandler) getMessageCount(m map[raftio.NodeInfo]uint64,
 func newNOOPTestTransport(handler IMessageHandler, fs vfs.IFS) (*Transport,
 	*Registry, *NOOPTransport, *noopRequest, *noopConnectRequest) {
 	t := newTestSnapshotDir(fs)
-	nodes := NewNodeRegistry(settings.Soft.StreamConnections, nil)
+	nodes := NewNodeRegistry(streamingChanLength, nil)
 	c := config.NodeHostConfig{
 		MaxSendQueueSize: 256 * 1024 * 1024,
 		RaftAddress:      "localhost:9876",
@@ -344,7 +343,7 @@ func newTestTransport(handler IMessageHandler,
 	mutualTLS bool, fs vfs.IFS) (*Transport, *Registry,
 	*syncutil.Stopper, *testSnapshotDir) {
 	stopper := syncutil.NewStopper()
-	nodes := NewNodeRegistry(settings.Soft.StreamConnections, nil)
+	nodes := NewNodeRegistry(streamingChanLength, nil)
 	t := newTestSnapshotDir(fs)
 	c := config.NodeHostConfig{
 		RaftAddress: serverAddress,
@@ -442,13 +441,13 @@ func testMessageCanBeSent(t *testing.T, mutualTLS bool, sz uint64, fs vfs.IFS) {
 func TestMessageCanBeSent(t *testing.T) {
 	fs := vfs.GetTestFS()
 	defer leaktest.AfterTest(t)()
-	testMessageCanBeSent(t, false, settings.LargeEntitySize+1, fs)
+	testMessageCanBeSent(t, false, maxMsgBatchSize+1, fs)
 	testMessageCanBeSent(t, false, recvBufSize/2, fs)
 	testMessageCanBeSent(t, false, recvBufSize+1, fs)
 	testMessageCanBeSent(t, false, perConnBufSize+1, fs)
 	testMessageCanBeSent(t, false, perConnBufSize/2, fs)
 	testMessageCanBeSent(t, false, 1, fs)
-	testMessageCanBeSent(t, true, settings.LargeEntitySize+1, fs)
+	testMessageCanBeSent(t, true, maxMsgBatchSize+1, fs)
 	testMessageCanBeSent(t, true, recvBufSize/2, fs)
 	testMessageCanBeSent(t, true, recvBufSize+1, fs)
 	testMessageCanBeSent(t, true, perConnBufSize+1, fs)

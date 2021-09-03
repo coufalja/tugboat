@@ -27,7 +27,6 @@ import (
 
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/logdb/kv"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/vfs"
 	pb "github.com/coufalja/tugboat/raftpb"
 )
@@ -214,14 +213,7 @@ func TestWriteBatchCanBeCleared(t *testing.T) {
 
 func TestHasEntryRecord(t *testing.T) {
 	tf := func(t *testing.T, kvs kv.IKVStore) {
-		has, err := hasEntryRecord(kvs, true)
-		if err != nil {
-			t.Fatalf("hasEntryRecord failed %v", err)
-		}
-		if has {
-			t.Errorf("unexpected result")
-		}
-		has, err = hasEntryRecord(kvs, false)
+		has, err := hasEntryRecord(kvs)
 		if err != nil {
 			t.Fatalf("hasEntryRecord failed %v", err)
 		}
@@ -233,43 +225,17 @@ func TestHasEntryRecord(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%v", err)
 		}
-		k := newKey(entryKeySize, nil)
-		k.SetEntryBatchKey(1, 1, 1)
-		if err := kvs.SaveValue(k.Key(), data); err != nil {
-			t.Fatalf("failed to save entry batch")
-		}
-		has, err = hasEntryRecord(kvs, true)
-		if err != nil {
-			t.Fatalf("hasEntryRecord failed %v", err)
-		}
-		if !has {
-			t.Errorf("unexpected result")
-		}
-		has, err = hasEntryRecord(kvs, false)
-		if err != nil {
-			t.Fatalf("hasEntryRecord failed %v", err)
-		}
-		if has {
-			t.Errorf("unexpected result")
-		}
 		ent := pb.Entry{}
 		data, err = ent.Marshal()
 		if err != nil {
 			t.Fatalf("%v", err)
 		}
-		k = newKey(entryKeySize, nil)
+		k := newKey(entryKeySize, nil)
 		k.SetEntryKey(1, 1, 1)
 		if err := kvs.SaveValue(k.Key(), data); err != nil {
 			t.Fatalf("failed to save entry batch")
 		}
-		has, err = hasEntryRecord(kvs, true)
-		if err != nil {
-			t.Fatalf("hasEntryRecord failed %v", err)
-		}
-		if !has {
-			t.Errorf("unexpected result")
-		}
-		has, err = hasEntryRecord(kvs, false)
+		has, err = hasEntryRecord(kvs)
 		if err != nil {
 			t.Fatalf("hasEntryRecord failed %v", err)
 		}
@@ -493,10 +459,6 @@ func testDiskCorruptionIsHandled(t *testing.T, wal bool, cut bool, fs vfs.IFS) {
 		}
 		if wal && kvs.Name() != "rocksdb" {
 			t.Skip("test skipped, WAL hardware corruption is not handled")
-		}
-		if wal && kvs.Name() == "rocksdb" &&
-			!settings.Soft.KVTolerateCorruptedTailRecords {
-			t.Skip("test skipped, RocksDBTolerateCorruptedTailRecords disabled")
 		}
 		wb := kvs.GetWriteBatch()
 		defer wb.Destroy()

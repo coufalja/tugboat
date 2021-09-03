@@ -664,7 +664,7 @@ func TestResize(t *testing.T) {
 		shrunk: true,
 	}
 	im.resize()
-	if uint64(cap(im.entries)) != entrySliceSize {
+	if uint64(cap(im.entries)) != EntrySliceSize {
 		t.Errorf("not resized")
 	}
 	if len(im.entries) != 2 {
@@ -702,9 +702,9 @@ func TestNewEntrySlice(t *testing.T) {
 		oCap  uint64
 		oLen  uint64
 	}{
-		{entrySliceSize, entrySliceSize, entrySliceSize},
-		{entrySliceSize - 1, entrySliceSize, entrySliceSize - 1},
-		{entrySliceSize + 1, entrySliceSize + 1, entrySliceSize + 1},
+		{EntrySliceSize, EntrySliceSize, EntrySliceSize},
+		{EntrySliceSize - 1, EntrySliceSize, EntrySliceSize - 1},
+		{EntrySliceSize + 1, EntrySliceSize + 1, EntrySliceSize + 1},
 	}
 	for idx, tt := range tests {
 		ents := make([]pb.Entry, tt.input)

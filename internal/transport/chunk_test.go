@@ -23,7 +23,6 @@ import (
 
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/rsm"
-	"github.com/coufalja/tugboat/internal/settings"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
@@ -33,7 +32,7 @@ func getTestChunk() []pb.Chunk {
 	result := make([]pb.Chunk, 0)
 	for chunkID := uint64(0); chunkID < 10; chunkID++ {
 		c := pb.Chunk{
-			DeploymentId:   settings.UnmanagedDeploymentID,
+			DeploymentId:   1,
 			BinVer:         raftio.TransportBinVersion,
 			ClusterId:      100,
 			NodeId:         2,
@@ -470,7 +469,7 @@ func TestAddingFirstChunkAgainResetsTempFile(t *testing.T) {
 		if handler.getSnapshotCount(100, 2) != 1 {
 			t.Errorf("got %d, want %d", handler.getSnapshotCount(100, 2), 1)
 		}
-		if !checkTestSnapshotFile(chunks, inputs[0], settings.SnapshotHeaderSize*10) {
+		if !checkTestSnapshotFile(chunks, inputs[0], 1024*10) {
 			t.Errorf("failed to generate the final snapshot file")
 		}
 	}
@@ -513,7 +512,7 @@ func testSnapshotWithExternalFilesAreHandledByChunk(t *testing.T,
 			t.Fatalf("failed to get chunks %v", err)
 		}
 		for _, c := range inputs {
-			c.DeploymentId = settings.UnmanagedDeploymentID
+			c.DeploymentId = 1
 			c.Data = make([]byte, c.ChunkSize)
 			added := chunks.addLocked(c)
 			if snapshotCount == 0 && added {
@@ -577,7 +576,7 @@ func TestWitnessSnapshotCanBeHandled(t *testing.T) {
 			if len(c.Data) == 0 {
 				t.Errorf("data is empty")
 			}
-			c.DeploymentId = settings.UnmanagedDeploymentID
+			c.DeploymentId = 1
 			added := chunks.addLocked(c)
 			if !added {
 				t.Errorf("failed to add chunk")
