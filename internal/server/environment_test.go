@@ -148,13 +148,6 @@ func TestCanDetectMismatchedLogDBName(t *testing.T) {
 		"incorrect name", false, ErrLogDBType, fs)
 }
 
-func TestCanDetectMismatchedAddress(t *testing.T) {
-	fs := vfs.GetTestFS()
-	testNodeHostDirectoryDetectsMismatches(t,
-		"invalid:12345", "", raftio.LogDBBinVersion,
-		testLogDBName, false, ErrNotOwner, fs)
-}
-
 func TestLockFileCanBeLockedAndUnlocked(t *testing.T) {
 	fs := vfs.GetTestFS()
 	c := getTestNodeHostConfig()
