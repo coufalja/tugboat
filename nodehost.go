@@ -160,20 +160,6 @@ type ClusterInfo struct {
 	Pending bool
 }
 
-// GossipInfo contains details of the gossip service.
-type GossipInfo struct {
-	// AdvertiseAddress is the advertise address used by the gossip service.
-	AdvertiseAddress string
-	// NumOfLiveNodeHosts is the number of current live NodeHost instances known
-	// to the gossip service. Note that the gossip service always knowns the
-	// local NodeHost instance itself. When the NumOfKnownNodeHosts value is 1,
-	// it means the gossip service doesn't know any other NodeHost instance that
-	// is considered as live.
-	NumOfKnownNodeHosts int
-	// Enabled is a boolean flag indicating whether the gossip service is enabled.
-	Enabled bool
-}
-
 // NodeHostInfo provides info about the NodeHost, including its managed Raft
 // cluster nodes and available Raft logs saved in its local persistent storage.
 type NodeHostInfo struct {
@@ -182,8 +168,6 @@ type NodeHostInfo struct {
 	// RaftAddress is the public address of the NodeHost used for exchanging Raft
 	// messages, snapshots and other metadata with other NodeHost instances.
 	RaftAddress string
-	// Gossip contains gossip service related information.
-	Gossip GossipInfo
 	// ClusterInfo is a list of all Raft clusters managed by the NodeHost
 	ClusterInfoList []ClusterInfo
 	// LogInfo is a list of raftio.NodeInfo values representing all Raft logs
@@ -1334,7 +1318,6 @@ func (nh *NodeHost) GetNodeHostInfo(opt NodeHostInfoOption) *NodeHostInfo {
 	nhi := &NodeHostInfo{
 		NodeHostID:      nh.ID(),
 		RaftAddress:     nh.RaftAddress(),
-		Gossip:          nh.getGossipInfo(),
 		ClusterInfoList: nh.getClusterInfo(),
 	}
 	nh.mu.Lock()
@@ -1350,17 +1333,6 @@ func (nh *NodeHost) GetNodeHostInfo(opt NodeHostInfoOption) *NodeHostInfo {
 		nhi.LogInfo = logInfo
 	}
 	return nhi
-}
-
-func (nh *NodeHost) getGossipInfo() GossipInfo {
-	if r, ok := nh.nodes.(*transport.NodeHostIDRegistry); ok {
-		return GossipInfo{
-			Enabled:             true,
-			AdvertiseAddress:    r.AdvertiseAddress(),
-			NumOfKnownNodeHosts: r.NumMembers(),
-		}
-	}
-	return GossipInfo{}
 }
 
 func (nh *NodeHost) propose(s *client.Session,
@@ -1691,20 +1663,8 @@ func (te *transportEvent) ConnectionFailed(addr string, snapshot bool) {
 
 func (nh *NodeHost) createNodeRegistry() error {
 	validator := nh.nhConfig.GetTargetValidator()
-	// TODO:
-	// more tests here required
-	if nh.nhConfig.AddressByNodeHostID {
-		plog.Infof("AddressByNodeHostID: true, use gossip based node registry")
-		r, err := transport.NewNodeHostIDRegistry(nh.ID(),
-			nh.nhConfig, streamConnections, validator)
-		if err != nil {
-			return err
-		}
-		nh.nodes = r
-	} else {
-		plog.Infof("using regular node registry")
-		nh.nodes = transport.NewNodeRegistry(streamConnections, validator)
-	}
+	plog.Infof("using regular node registry")
+	nh.nodes = transport.NewNodeRegistry(streamConnections, validator)
 	return nil
 }
 

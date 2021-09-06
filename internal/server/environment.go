@@ -29,7 +29,6 @@ import (
 	"github.com/coufalja/tugboat/internal/utils"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
-	"github.com/coufalja/tugboat/raftio"
 	"github.com/coufalja/tugboat/raftpb"
 )
 
@@ -54,9 +53,6 @@ var (
 	// ErrLockDirectory indicates that obtaining exclusive lock to the data
 	// directory failed.
 	ErrLockDirectory = errors.New("failed to lock data directory")
-	// ErrIncompatibleData indicates that the specified data directory contains
-	// incompatible data.
-	ErrIncompatibleData = errors.New("incompatible LogDB data format")
 	// ErrLogDBBrokenChange indicates that your NodeHost failed to be created as
 	// your code is hit by the LogDB breaking change introduced in v3.0. Set your
 	// NodeHostConfig.LogDBFactory to rocksdb.OpenBatchedLogDB to continue.
@@ -360,25 +356,11 @@ func (env *Env) check(cfg config.NodeHostConfig,
 		return ErrLogDBType
 	}
 	if !dbto {
-		if !cfg.AddressByNodeHostID && !se(s.Address, cfg.RaftAddress) {
-			return ErrNotOwner
-		}
 		if len(s.Hostname) > 0 && !se(s.Hostname, env.hostname) {
 			return ErrHostnameChanged
 		}
 		if s.DeploymentId != 0 && s.DeploymentId != cfg.GetDeploymentID() {
 			return ErrDeploymentIDChanged
-		}
-		if s.AddressByNodeHostId != cfg.AddressByNodeHostID {
-			return ErrAddressByNodeHostIDChanged
-		}
-		if s.BinVer != binVer {
-			if s.BinVer == raftio.LogDBBinVersion &&
-				binVer == raftio.PlainLogDBBinVersion {
-				return ErrLogDBBrokenChange
-			}
-			plog.Errorf("logdb binary ver changed, %d vs %d", s.BinVer, binVer)
-			return ErrIncompatibleData
 		}
 	}
 	return nil
@@ -392,17 +374,16 @@ const (
 func (env *Env) createFlagFile(cfg config.NodeHostConfig,
 	dir string, ver uint32, name string) error {
 	s := raftpb.RaftDataStatus{
-		Address:             cfg.RaftAddress,
-		BinVer:              ver,
-		HardHash:            0,
-		LogdbType:           name,
-		Hostname:            env.hostname,
-		DeploymentId:        cfg.GetDeploymentID(),
-		StepWorkerCount:     cfg.Expert.Engine.ExecShards,
-		LogdbShardCount:     cfg.Expert.LogDB.Shards,
-		MaxSessionCount:     LRUMaxSessionCount,
-		EntryBatchSize:      LogDBEntryBatchSize,
-		AddressByNodeHostId: cfg.AddressByNodeHostID,
+		Address:         cfg.RaftAddress,
+		BinVer:          ver,
+		HardHash:        0,
+		LogdbType:       name,
+		Hostname:        env.hostname,
+		DeploymentId:    cfg.GetDeploymentID(),
+		StepWorkerCount: cfg.Expert.Engine.ExecShards,
+		LogdbShardCount: cfg.Expert.LogDB.Shards,
+		MaxSessionCount: LRUMaxSessionCount,
+		EntryBatchSize:  LogDBEntryBatchSize,
 	}
 	return fileutil.CreateFlagFile(dir, flagFilename, &s, env.fs)
 }

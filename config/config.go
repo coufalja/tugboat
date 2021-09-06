@@ -20,18 +20,14 @@ package config
 
 import (
 	"crypto/tls"
-	"net"
 	"path/filepath"
 	"reflect"
-	"strconv"
-	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/lni/goutils/netutil"
 	"github.com/lni/goutils/stringutil"
 
 	"github.com/coufalja/tugboat/internal/fileutil"
-	"github.com/coufalja/tugboat/internal/id"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
 	"github.com/coufalja/tugboat/raftio"
@@ -284,22 +280,6 @@ type NodeHostConfig struct {
 	// restarts. AddressByNodeHostID should be set to true when the RaftAddress
 	// value might change after restart.
 	RaftAddress string
-	// AddressByNodeHostID indicates that NodeHost instances should be addressed
-	// by their NodeHostID values. This feature is usually used when only dynamic
-	// addresses are available. When enabled, NodeHostID values should be used
-	// as the target parameter when calling NodeHost's StartCluster,
-	// RequestAddNode, RequestAddNonVoting and RequestAddWitness methods.
-	//
-	// Enabling AddressByNodeHostID also enables the internal gossip service,
-	// NodeHostConfig.Gossip must be configured to control the behaviors of the
-	// gossip service.
-	//
-	// Note that once enabled, the AddressByNodeHostID setting can not be later
-	// disabled after restarts.
-	//
-	// Please see the godocs of the NodeHostConfig.Gossip field for a detailed
-	// example on how AddressByNodeHostID and gossip works.
-	AddressByNodeHostID bool
 	// ListenAddress is an optional field in the hostname:port or IP:port address
 	// form used by the transport module to listen on for Raft message and
 	// snapshots. When the ListenAddress field is not set, The transport module
@@ -373,90 +353,6 @@ type NodeHostConfig struct {
 	// commits are not notified, clients are only notified when their proposals
 	// are both committed and applied.
 	NotifyCommit bool
-	// Gossip contains configurations for the gossip service. When the
-	// AddressByNodeHostID field is set to true, each NodeHost instance will use
-	// an internal gossip service to exchange knowledges of known NodeHost
-	// instances including their RaftAddress and NodeHostID values. This Gossip
-	// field contains configurations that controls how the gossip service works.
-	//
-	// As an detailed example on how to use the gossip service in the situation
-	// where all available machines have dynamically assigned IPs on reboot -
-	//
-	// Consider that there are three NodeHost instances on three machines, each
-	// of them has a dynamically assigned IP address which will change on reboot.
-	// NodeHostConfig.RaftAddress should be set to the current address that can be
-	// reached by remote NodeHost instance. In this example, we will assume they
-	// are
-	//
-	// 10.0.0.100:24000
-	// 10.0.0.200:24000
-	// 10.0.0.300:24000
-	//
-	// To use these machines, first enable the NodeHostConfig.AddressByNodeHostID
-	// field and start the NodeHost instances. The NodeHostID value of each
-	// NodeHost instance can be obtained by calling NodeHost.ID(). Let's say they
-	// are
-	//
-	// "nhid-xxxxx",
-	// "nhid-yyyyy",
-	// "nhid-zzzzz".
-	//
-	// All these NodeHostID are fixed, they will never change after reboots.
-	//
-	// When starting Raft nodes or requesting new nodes to be added, use the above
-	// mentioned NodeHostID values as the target parameters (which are of the
-	// Target type). Let's say we want to start a Raft Node as a part of a three
-	// replicas Raft cluster, the initialMembers parameter of the StartCluster
-	// method can be set to
-	//
-	// initialMembers := map[uint64]Target {
-	// 	 1: "nhid-xxxxx",
-	//   2: "nhid-yyyyy",
-	//   3: "nhid-zzzzz",
-	// }
-	//
-	// This indicates that node 1 of the cluster will be running on the NodeHost
-	// instance identified by the NodeHostID value "nhid-xxxxx", node 2 of the
-	// same cluster will be running on the NodeHost instance identified by the
-	// NodeHostID value of "nhid-yyyyy" and so on.
-	//
-	// The internal gossip service exchanges NodeHost details, including their
-	// NodeHostID and RaftAddress values, with all other known NodeHost instances.
-	// Thanks to the nature of gossip, it will eventually allow each NodeHost
-	// instance to be aware of the current details of all NodeHost instances.
-	// As a result, let's say when Raft node 1 wants to send a Raft message to
-	// node 2, it first figures out that node 2 is running on the NodeHost
-	// identified by the NodeHostID value "nhid-yyyyy", RaftAddress information
-	// from the gossip service further shows that "nhid-yyyyy" maps to a machine
-	// currently reachable at 10.0.0.200:24000. Raft messages can thus be
-	// delivered.
-	//
-	// The Gossip field here is used to configure how the gossip service works.
-	// In this example, let's say we choose to use the following configurations
-	// for those three NodeHost instaces.
-	//
-	// GossipConfig {
-	//   BindAddress: "10.0.0.100:24001",
-	//   Seed: []string{10.0.0.200:24001},
-	// }
-	//
-	// GossipConfig {
-	//   BindAddress: "10.0.0.200:24001",
-	//   Seed: []string{10.0.0.300:24001},
-	// }
-	//
-	// GossipConfig {
-	//   BindAddress: "10.0.0.300:24001",
-	//   Seed: []string{10.0.0.100:24001},
-	// }
-	//
-	// For those three machines, the gossip component listens on
-	// "10.0.0.100:24001", "10.0.0.200:24001" and "10.0.0.300:24001" respectively
-	// for incoming gossip messages. The Seed field is a list of known gossip end
-	// points the local gossip service will try to talk to. The Seed field doesn't
-	// need to include all gossip end points, a few well connected nodes in the
-	// gossip network is enough.
-	Gossip GossipConfig
 	// Expert contains options for expert users who are familiar with the internals
 	// of Dragonboat. Users are recommended not to use this field unless
 	// absoloutely necessary. It is important to note that any change to this field
@@ -561,20 +457,12 @@ func (c *NodeHostConfig) Validate() error {
 	if c.LogDBFactory != nil && c.Expert.LogDBFactory != nil {
 		return errors.New("both LogDBFactory and Expert.LogDBFactory specified")
 	}
-	if c.AddressByNodeHostID && c.Gossip.IsEmpty() {
-		return errors.New("gossip service not configured")
-	}
 	validate := c.GetRaftAddressValidator()
 	if !validate(c.RaftAddress) {
 		return errors.New("invalid NodeHost address")
 	}
 	if len(c.ListenAddress) > 0 && !validate(c.ListenAddress) {
 		return errors.New("invalid ListenAddress")
-	}
-	if !c.Gossip.IsEmpty() {
-		if err := c.Gossip.Validate(); err != nil {
-			return err
-		}
 	}
 	if !c.Expert.Engine.IsEmpty() {
 		if err := c.Expert.Engine.Validate(); err != nil {
@@ -722,9 +610,7 @@ func (c *NodeHostConfig) GetDeploymentID() uint64 {
 // GetTargetValidator returns a TargetValidator based on the specified
 // NodeHostConfig instance.
 func (c *NodeHostConfig) GetTargetValidator() TargetValidator {
-	if c.AddressByNodeHostID {
-		return id.IsNodeHostID
-	} else if c.Expert.TransportFactory != nil {
+	if c.Expert.TransportFactory != nil {
 		return c.Expert.TransportFactory.Validate
 	}
 	return stringutil.IsValidAddress
@@ -936,89 +822,4 @@ type ExpertConfig struct {
 	// TestNodeHostID is the NodeHostID value to be used by the NodeHost instance.
 	// This field is expected to be used in tests only.
 	TestNodeHostID uint64
-	// TestGossipProbeInterval define the probe interval used by the gossip
-	// service in tests.
-	TestGossipProbeInterval time.Duration
-}
-
-// GossipConfig contains configurations for the gossip service. Gossip service
-// is a fully distributed networked service for exchanging knowledges on
-// NodeHost instances. When enabled by the NodeHostConfig.AddressByNodeHostID
-// field, it is employed to manage NodeHostID to RaftAddress mappings of known
-// NodeHost instances.
-type GossipConfig struct {
-	// BindAddress is the address for the gossip service to bind to and listen on.
-	// Both UDP and TCP ports are used by the gossip service. The local gossip
-	// service should be able to receive gossip service related messages by
-	// binding to and listening on this address. BindAddress is usually in the
-	// format of IP:Port, Hostname:Port or DNS Name:Port.
-	BindAddress string
-	// AdvertiseAddress is the address to advertise to other NodeHost instances
-	// used for NAT traversal. Gossip services running on remote NodeHost
-	// instances will use AdvertiseAddress to exchange gossip service related
-	// messages. AdvertiseAddress is in the format of IP:Port.
-	AdvertiseAddress string
-	// Seed is a list of AdvertiseAddress of remote NodeHost instances. Local
-	// NodeHost instance will try to contact all of them to bootstrap the gossip
-	// service. At least one reachable NodeHost instance is required to
-	// successfully bootstrap the gossip service. Each seed address is in the
-	// format of IP:Port, Hostname:Port or DNS Name:Port.
-	//
-	// It is ok to include seed addresses that are temporarily unreachable, e.g.
-	// when launching the first NodeHost instance in your deployment, you can
-	// include AdvertiseAddresses from other NodeHost instances that you plan to
-	// launch shortly afterwards.
-	Seed []string
-}
-
-// IsEmpty returns a boolean flag indicating whether the GossipConfig instance
-// is empty.
-func (g *GossipConfig) IsEmpty() bool {
-	return len(g.BindAddress) == 0 &&
-		len(g.AdvertiseAddress) == 0 && len(g.Seed) == 0
-}
-
-// Validate validates the GossipConfig instance.
-func (g *GossipConfig) Validate() error {
-	if len(g.BindAddress) > 0 && !stringutil.IsValidAddress(g.BindAddress) {
-		return errors.New("invalid GossipConfig.BindAddress")
-	} else if len(g.BindAddress) == 0 {
-		return errors.New("BindAddress not set")
-	}
-	if len(g.AdvertiseAddress) > 0 && !isValidAdvertiseAddress(g.AdvertiseAddress) {
-		return errors.New("invalid GossipConfig.AdvertiseAddress")
-	}
-	if len(g.Seed) == 0 {
-		return errors.New("seed nodes not set")
-	}
-	count := 0
-	for _, v := range g.Seed {
-		if v != g.BindAddress && v != g.AdvertiseAddress {
-			count++
-		}
-		if !stringutil.IsValidAddress(v) {
-			return errors.New("invalid GossipConfig.Seed value")
-		}
-	}
-	if count == 0 {
-		return errors.New("no valid seed node")
-	}
-	return nil
-}
-
-func isValidAdvertiseAddress(addr string) bool {
-	host, sp, err := net.SplitHostPort(addr)
-	if err != nil {
-		return false
-	}
-	port, err := strconv.ParseUint(sp, 10, 16)
-	if err != nil {
-		return false
-	}
-	if port > 65535 {
-		return false
-	}
-	// the memberlist package doesn't allow hostname or DNS name to be used in
-	// advertise address
-	return stringutil.IPV4Regex.MatchString(host)
 }
