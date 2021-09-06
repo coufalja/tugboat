@@ -54,8 +54,6 @@ var (
 	// ErrLockDirectory indicates that obtaining exclusive lock to the data
 	// directory failed.
 	ErrLockDirectory = errors.New("failed to lock data directory")
-	// ErrHardSettingsChanged indicates that hard settings changed.
-	ErrHardSettingsChanged = errors.New("internal/settings/hard.go settings changed")
 	// ErrIncompatibleData indicates that the specified data directory contains
 	// incompatible data.
 	ErrIncompatibleData = errors.New("incompatible LogDB data format")

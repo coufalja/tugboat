@@ -211,13 +211,6 @@ func TestCanDetectMismatchedAddress(t *testing.T) {
 		testLogDBName, false, false, ErrNotOwner, fs)
 }
 
-func TestCanDetectMismatchedHardHash(t *testing.T) {
-	fs := vfs.GetTestFS()
-	testNodeHostDirectoryDetectsMismatches(t,
-		testAddress, "", raftio.LogDBBinVersion,
-		testLogDBName, true, false, ErrHardSettingsChanged, fs)
-}
-
 func TestCanDetectMismatchedAddressByNodeHostID(t *testing.T) {
 	fs := vfs.GetTestFS()
 	testNodeHostDirectoryDetectsMismatches(t,
