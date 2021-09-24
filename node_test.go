@@ -24,6 +24,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/coufalja/tugboat/transport"
 	"github.com/lni/goutils/leaktest"
 	"github.com/lni/goutils/random"
 
@@ -34,7 +35,6 @@ import (
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/internal/tests"
-	"github.com/coufalja/tugboat/internal/transport"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"

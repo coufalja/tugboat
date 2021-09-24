@@ -438,23 +438,6 @@ func testMessageCanBeSent(t *testing.T, mutualTLS bool, sz uint64, fs vfs.IFS) {
 	}
 }
 
-func TestMessageCanBeSent(t *testing.T) {
-	fs := vfs.GetTestFS()
-	defer leaktest.AfterTest(t)()
-	testMessageCanBeSent(t, false, maxMsgBatchSize+1, fs)
-	testMessageCanBeSent(t, false, recvBufSize/2, fs)
-	testMessageCanBeSent(t, false, recvBufSize+1, fs)
-	testMessageCanBeSent(t, false, perConnBufSize+1, fs)
-	testMessageCanBeSent(t, false, perConnBufSize/2, fs)
-	testMessageCanBeSent(t, false, 1, fs)
-	testMessageCanBeSent(t, true, maxMsgBatchSize+1, fs)
-	testMessageCanBeSent(t, true, recvBufSize/2, fs)
-	testMessageCanBeSent(t, true, recvBufSize+1, fs)
-	testMessageCanBeSent(t, true, perConnBufSize+1, fs)
-	testMessageCanBeSent(t, true, perConnBufSize/2, fs)
-	testMessageCanBeSent(t, true, 1, fs)
-}
-
 // add some latency to localhost
 // sudo tc qdisc add dev lo root handle 1:0 netem delay 100msec
 // remove latency

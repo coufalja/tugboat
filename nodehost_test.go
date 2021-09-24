@@ -34,6 +34,8 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/coufalja/tugboat-transport/tcp"
+	"github.com/coufalja/tugboat/transport"
 	"github.com/lni/goutils/leaktest"
 	"github.com/lni/goutils/random"
 	"github.com/lni/goutils/syncutil"
@@ -46,7 +48,6 @@ import (
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/internal/tests"
-	"github.com/coufalja/tugboat/internal/transport"
 	"github.com/coufalja/tugboat/internal/vfs"
 	chantrans "github.com/coufalja/tugboat/plugin/chan"
 	"github.com/coufalja/tugboat/raftio"
@@ -675,9 +676,9 @@ func TestTCPTransportIsUsedByDefault(t *testing.T) {
 	to := &testOption{
 		tf: func(nh *NodeHost) {
 			tt := nh.transport.(*transport.Transport)
-			if tt.GetTrans().Name() != transport.TCPTransportName {
+			if tt.GetTrans().Name() != tcp.TCPTransportName {
 				t.Errorf("transport type name %s, expect %s",
-					tt.GetTrans().Name(), transport.TCPTransportName)
+					tt.GetTrans().Name(), tcp.TCPTransportName)
 			}
 		},
 		noElection: true,

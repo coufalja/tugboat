@@ -17,10 +17,12 @@
 
 package transport
 
+import "github.com/coufalja/tugboat-transport/tcp"
+
 // ApplyMonkeySettings applies monkey settings
 func ApplyMonkeySettings() {
-	perConnBufSize = 1024 * 64
+	tcp.perConnBufSize = 1024 * 64
 	sendQueueLen = 64
 	snapshotChunkSize = 1024
-	payloadBufferSize = 1024 * 8
+	tcp.payloadBufferSize = 1024 * 8
 }

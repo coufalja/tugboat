@@ -65,6 +65,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/coufalja/tugboat/transport"
 	"github.com/lni/goutils/logutil"
 	"github.com/lni/goutils/syncutil"
 
@@ -75,7 +76,6 @@ import (
 	"github.com/coufalja/tugboat/internal/logdb"
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/transport"
 	"github.com/coufalja/tugboat/internal/utils"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"

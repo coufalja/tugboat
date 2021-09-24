@@ -21,6 +21,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/coufalja/tugboat/transport"
 	"github.com/golang/snappy"
 	"github.com/lni/goutils/random"
 
@@ -30,7 +31,6 @@ import (
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/internal/tests"
-	"github.com/coufalja/tugboat/internal/transport"
 	"github.com/coufalja/tugboat/internal/utils/dio"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"

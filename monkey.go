@@ -22,9 +22,9 @@ import (
 
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/transport"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
+	"github.com/coufalja/tugboat/transport"
 )
 
 func ApplyMonkeySettings() {

@@ -19,6 +19,7 @@ import (
 	"sync/atomic"
 
 	"github.com/cockroachdb/errors"
+	"github.com/coufalja/tugboat/transport"
 	"github.com/lni/goutils/logutil"
 	"github.com/lni/goutils/syncutil"
 
@@ -29,7 +30,6 @@ import (
 	"github.com/coufalja/tugboat/internal/raft"
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
-	"github.com/coufalja/tugboat/internal/transport"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"

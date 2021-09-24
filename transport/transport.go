@@ -47,6 +47,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/coufalja/tugboat-transport/tcp"
 	"github.com/lni/goutils/logutil"
 	"github.com/lni/goutils/netutil"
 	circuit "github.com/lni/goutils/netutil/rubyist/circuitbreaker"
@@ -164,7 +165,7 @@ type DefaultTransportFactory struct{}
 func (dtm *DefaultTransportFactory) Create(nhConfig config.NodeHostConfig,
 	handler raftio.MessageHandler,
 	chunkHandler raftio.ChunkHandler) raftio.ITransport {
-	return NewTCPTransport(nhConfig, handler, chunkHandler)
+	return tcp.NewTCPTransport(nhConfig, handler, chunkHandler)
 }
 
 // Validate returns a boolean value indicating whether the specified address is
