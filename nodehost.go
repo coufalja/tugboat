@@ -1772,6 +1772,10 @@ func (nh *NodeHost) handleListenerEvents() {
 	}
 }
 
+func (nh *NodeHost) isPartitioned() bool {
+	return atomic.LoadInt32(&nh.partitioned) == 1
+}
+
 func (nh *NodeHost) sendMessage(msg pb.Message) {
 	if nh.isPartitioned() {
 		return
