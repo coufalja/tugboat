@@ -34,7 +34,6 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/coufalja/tugboat-transport/tcp"
 	"github.com/coufalja/tugboat/transport"
 	"github.com/lni/goutils/leaktest"
 	"github.com/lni/goutils/random"
@@ -661,24 +660,6 @@ func TestLogDBCanBeExtended(t *testing.T) {
 		tf: func(nh *NodeHost) {
 			if nh.mu.logdb.Name() != ldb.Name() {
 				t.Errorf("logdb type name %s, expect %s", nh.mu.logdb.Name(), ldb.Name())
-			}
-		},
-		noElection: true,
-	}
-	runNodeHostTest(t, to, fs)
-}
-
-func TestTCPTransportIsUsedByDefault(t *testing.T) {
-	if vfs.GetTestFS() != vfs.DefaultFS {
-		t.Skip("memfs test mode, skipped")
-	}
-	fs := vfs.GetTestFS()
-	to := &testOption{
-		tf: func(nh *NodeHost) {
-			tt := nh.transport.(*transport.Transport)
-			if tt.GetTrans().Name() != tcp.TCPTransportName {
-				t.Errorf("transport type name %s, expect %s",
-					tt.GetTrans().Name(), tcp.TCPTransportName)
 			}
 		},
 		noElection: true,

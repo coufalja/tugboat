@@ -47,18 +47,15 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/coufalja/tugboat-transport/tcp"
 	"github.com/lni/goutils/logutil"
 	"github.com/lni/goutils/netutil"
 	circuit "github.com/lni/goutils/netutil/rubyist/circuitbreaker"
 	"github.com/lni/goutils/syncutil"
 
 	"github.com/coufalja/tugboat/config"
-	"github.com/coufalja/tugboat/internal/invariants"
 	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
-	ct "github.com/coufalja/tugboat/plugin/chan"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 )
@@ -158,22 +155,6 @@ const (
 	chanIsFull
 )
 
-// DefaultTransportFactory is the default transport module used.
-type DefaultTransportFactory struct{}
-
-// Create creates a default transport instance.
-func (dtm *DefaultTransportFactory) Create(nhConfig config.NodeHostConfig,
-	handler raftio.MessageHandler,
-	chunkHandler raftio.ChunkHandler) raftio.ITransport {
-	return tcp.NewTCPTransport(nhConfig, handler, chunkHandler)
-}
-
-// Validate returns a boolean value indicating whether the specified address is
-// valid.
-func (dtm *DefaultTransportFactory) Validate(addr string) bool {
-	panic("not suppose to be called")
-}
-
 // Transport is the transport layer for delivering raft messages and snapshots.
 type Transport struct {
 	mu struct {
@@ -222,7 +203,7 @@ func NewTransport(nhConfig config.NodeHostConfig,
 	}
 	chunks := NewChunk(t.handleRequest,
 		t.snapshotReceived, t.dir, t.nhConfig.GetDeploymentID(), fs)
-	t.trans = create(nhConfig, t.handleRequest, chunks.Add)
+	t.trans = nhConfig.Expert.TransportFactory.Create(nhConfig, t.handleRequest, chunks.Add)
 	t.chunks = chunks
 	plog.Infof("transport type: %s", t.trans.Name())
 	if err := t.trans.Start(); err != nil {
@@ -533,18 +514,4 @@ func (t *Transport) sendMessageBatch(conn raftio.IConnection,
 	}
 	t.metrics.messageSendSuccess(uint64(len(batch.Requests)))
 	return nil
-}
-
-func create(nhConfig config.NodeHostConfig,
-	requestHandler raftio.MessageHandler,
-	chunkHandler raftio.ChunkHandler) raftio.ITransport {
-	var tm config.TransportFactory
-	if nhConfig.Expert.TransportFactory != nil {
-		tm = nhConfig.Expert.TransportFactory
-	} else if invariants.MemfsTest {
-		tm = &ct.ChanTransportFactory{}
-	} else {
-		tm = &DefaultTransportFactory{}
-	}
-	return tm.Create(nhConfig, requestHandler, chunkHandler)
 }

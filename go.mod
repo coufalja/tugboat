@@ -6,7 +6,6 @@ require (
 	github.com/VictoriaMetrics/metrics v1.6.2
 	github.com/cockroachdb/errors v1.8.6
 	github.com/cockroachdb/pebble v0.0.0-20210406181039-e3809b89b488
-	github.com/coufalja/tugboat-transport/tcp v0.0.0-20210924121713-8d767baafdb5
 	github.com/golang/snappy v0.0.4-0.20210502035320-33fc3d5d8d99
 	github.com/lni/goutils v1.3.1-0.20210517080819-7f56813dc438
 	github.com/lni/vfs v0.2.0
@@ -21,7 +20,6 @@ require (
 	github.com/cockroachdb/sentry-go v0.6.1-cockroachdb.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/juju/ratelimit v1.0.2-0.20191002062651-f60b32039441 // indirect
 	github.com/klauspost/compress v1.11.7 // indirect
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/kr/text v0.2.0 // indirect

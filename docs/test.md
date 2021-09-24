@@ -8,22 +8,6 @@
 * I/O error injection tests. [charybdefs](https://github.com/scylladb/charybdefs) from [scylladb](http://www.scylladb.com/) is employed to inject I/O errors to the underlying file-system to ensure that Dragonboat handle them correctly.
 * Power loss tests. We test the system to see what actually happens after power loss.
 
-## Monkey Testing ##
-### Setup ###
-* 5 NodeNosts and 3 Drummer servers per process
-* hundreds of Raft clusters per process
-* randomly kill and restart NodeHosts and Drummer servers, each NodeHost usually stay online for a few minutes
-* randomly delete all data owned by a certain NodeHost to emulate permanent disk failure
-* randomly drop and re-order messages exchanged between NodeHosts
-* randomly partition NodeHosts from rest of the network
-* for selected instances, snapshotting and log compaction happen all the time in the background
-* committed entries are applied with random delays
-* snapshots are captured and applied with random delays
-* a list of background workers keep writing to/reading from random Raft clusters with stale read checks
-* client activity history files are verified by linearizability checkers such as Jepsen's Knossos
-* run hundreds of above described processes concurrently on each test server, 30 minutes each iteration, many iterations every night
-* run concurrently on many servers every night
-
 ### Checks ###
 * no linearizability violation
 * no cluster is permanently stuck
