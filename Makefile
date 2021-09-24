@@ -95,11 +95,11 @@ endif
 TEST_OPTIONS=test $(GOCMDTAGS) -timeout=2400s -count=1 $(VERBOSE) \
   $(RACE_DETECTOR_FLAG) $(COVER_FLAG) $(SELECTED_TEST_OPTION)
 .PHONY: dragonboat-test
-dragonboat-test: test-raft test-raftpb test-rsm test-logdb test-transport    \
+dragonboat-test: test-raft test-raftpb test-rsm test-logdb    \
 	test-multiraft test-config test-client test-server test-fs   	 \
 	test-id test-utils
 .PHONY: ci-test
-ci-test: test-raft test-raftpb test-rsm test-logdb test-transport 		       \
+ci-test: test-raft test-raftpb test-rsm test-logdb 		       \
   test-config test-client test-server test-tests test-fs 				 \
 	test-id test-utils
 .PHONY: test
@@ -116,7 +116,7 @@ actions-test: ci-test test-cov
 unit-test-bin: TEST_OPTIONS=test -c -o $@.bin -tags=$(TESTTAGS) 						 \
 	-count=1 $(VERBOSE) $(RACE_DETECTOR_FLAG) $(SELECTED_TEST_OPTION)
 .PHONY: unit-test-bin
-unit-test-bin: test-raft test-raftpb test-rsm test-logdb test-transport 		 \
+unit-test-bin: test-raft test-raftpb test-rsm test-logdb		 \
   test-multiraft test-config test-client test-server test-plugins \
 	test-tests test-fs test-id test-utils
 
@@ -159,9 +159,6 @@ test-rsm:
 .PHONY: test-logdb
 test-logdb:
 	$(GOTEST) $(PKGNAME)/internal/logdb
-.PHONY: test-transport
-test-transport:
-	$(GOTEST) $(PKGNAME)/internal/transport
 .PHONY: test-multiraft
 test-multiraft:
 	$(GOTEST) $(PKGNAME)
