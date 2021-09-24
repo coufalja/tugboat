@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build integration
+
 package tugboat
 
 import (
@@ -646,25 +648,6 @@ func (t *testLogDBFactory) Create(cfg config.NodeHostConfig,
 
 func (t *testLogDBFactory) Name() string {
 	return t.ldb.Name()
-}
-
-func TestLogDBCanBeExtended(t *testing.T) {
-	fs := vfs.GetTestFS()
-	ldb := &noopLogDB{}
-	to := &testOption{
-		updateNodeHostConfig: func(nhc *config.NodeHostConfig) *config.NodeHostConfig {
-			nhc.Expert.LogDBFactory = &testLogDBFactory{ldb: ldb}
-			return nhc
-		},
-
-		tf: func(nh *NodeHost) {
-			if nh.mu.logdb.Name() != ldb.Name() {
-				t.Errorf("logdb type name %s, expect %s", nh.mu.logdb.Name(), ldb.Name())
-			}
-		},
-		noElection: true,
-	}
-	runNodeHostTest(t, to, fs)
 }
 
 type noopTransportFactory struct{}
@@ -3760,21 +3743,6 @@ func TestNodeHostFileLock(t *testing.T) {
 		}
 	}
 	runNodeHostTestDC(t, tf, !*spawnChild, fs)
-}
-
-type testLogDBFactory2 struct {
-	f func(config.NodeHostConfig,
-		config.LogDBCallback, []string, []string) (raftio.ILogDB, error)
-	name string
-}
-
-func (t *testLogDBFactory2) Create(cfg config.NodeHostConfig, cb config.LogDBCallback,
-	dirs []string, wals []string) (raftio.ILogDB, error) {
-	return t.f(cfg, cb, dirs, wals)
-}
-
-func (t *testLogDBFactory2) Name() string {
-	return t.name
 }
 
 func TestNodeHostWithUnexpectedDeploymentIDWillBeDetected(t *testing.T) {
