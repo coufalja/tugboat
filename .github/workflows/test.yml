@@ -1,4 +1,4 @@
-on: [push, pull_request]
+on: [ push, pull_request ]
 name: Test
 jobs:
   unit-test:
@@ -12,18 +12,7 @@ jobs:
       uses: actions/checkout@v2
     - name: Test
       run: |
-       make actions-test
-  arm64-unit-test:
-    runs-on: self-hosted
-    steps:
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.17.x
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Test
-      run: make test
+        make actions-test
   race-unit-test:
     runs-on: ubuntu-18.04
     steps:
@@ -60,28 +49,20 @@ jobs:
   windows-unit-test:
     runs-on: windows-latest
     steps:
-     - name: Install Go
-       uses: actions/setup-go@v2
-       with:
-         go-version: 1.17.x
-     - name: Checkout code
-       uses: actions/checkout@v2
-     - name: Test
-       run: go test -v
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17.x
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Test
+      run: go test -v
   static-check:
     runs-on: ubuntu-18.04
     steps:
-     - name: Install Go
-       uses: actions/setup-go@v2
-       with:
-         go-version: 1.17.x
-     - name: Install golangci-lint
-       run: |
-        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | bash -s -- -b $GOROOT/bin v1.23.8
-        go get -u github.com/kisielk/errcheck
-        go get -u golang.org/x/lint/golint
-        go get -u github.com/gordonklaus/ineffassign
-     - name: Checkout code
-       uses: actions/checkout@v2
-     - name: Static check
-       run: make static-check
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Lint
+      uses: golangci/golangci-lint-action@v2
+      with:
+        version: v1.41
