@@ -108,7 +108,7 @@ func (g *testSnapshotDir) getSnapshotFileMD5(clusterID uint64,
 func (g *testSnapshotDir) generateSnapshotExternalFile(clusterID uint64,
 	nodeID uint64, index uint64, filename string, sz uint64) {
 	snapDir := g.GetSnapshotDir(clusterID, nodeID, index)
-	if err := g.fs.MkdirAll(snapDir, 0755); err != nil {
+	if err := g.fs.MkdirAll(snapDir, 0o755); err != nil {
 		panic(err)
 	}
 	fp := g.fs.PathJoin(snapDir, filename)
@@ -131,7 +131,7 @@ func (g *testSnapshotDir) generateSnapshotExternalFile(clusterID uint64,
 func (g *testSnapshotDir) generateSnapshotFile(clusterID uint64,
 	nodeID uint64, index uint64, filename string, sz uint64, fs vfs.IFS) {
 	snapDir := g.GetSnapshotDir(clusterID, nodeID, index)
-	if err := g.fs.MkdirAll(snapDir, 0755); err != nil {
+	if err := g.fs.MkdirAll(snapDir, 0o755); err != nil {
 		panic(err)
 	}
 	fp := g.fs.PathJoin(snapDir, filename)
@@ -723,7 +723,7 @@ func testSnapshotCanBeSent(t *testing.T,
 	chunks := NewChunk(trans.handleRequest,
 		trans.snapshotReceived, trans.dir, trans.nhConfig.GetDeploymentID(), fs)
 	snapDir := chunks.dir(100, 2)
-	if err := fs.MkdirAll(snapDir, 0755); err != nil {
+	if err := fs.MkdirAll(snapDir, 0o755); err != nil {
 		t.Fatalf("%v", err)
 	}
 	m.Snapshot.Filepath = fs.PathJoin(dir, "testsnapshot.gbsnap")
@@ -953,7 +953,7 @@ func testSnapshotWithExternalFilesCanBeSend(t *testing.T,
 		trans.snapshotReceived, trans.dir, trans.nhConfig.GetDeploymentID(), fs)
 	ts := getTestChunk()
 	snapDir := chunks.dir(ts[0].ClusterId, ts[0].NodeId)
-	if err := fs.MkdirAll(snapDir, 0755); err != nil {
+	if err := fs.MkdirAll(snapDir, 0o755); err != nil {
 		t.Fatalf("%v", err)
 	}
 	nodes.Add(100, 2, serverAddress)

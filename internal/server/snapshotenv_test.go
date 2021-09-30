@@ -129,7 +129,7 @@ func runEnvTest(t *testing.T, f func(t *testing.T, env SSEnv), fs vfs.IFS) {
 		}
 		env := NewSSEnv(ff, 1, 1, 1, 2, SnapshotMode, fs)
 		tmpDir := env.GetTempDir()
-		if err := fs.MkdirAll(tmpDir, 0755); err != nil {
+		if err := fs.MkdirAll(tmpDir, 0o755); err != nil {
 			t.Fatalf("%v", err)
 		}
 		f(t, env)
@@ -211,7 +211,7 @@ func TestFinalizeSnapshotCanComplete(t *testing.T) {
 func TestFinalizeSnapshotReturnOutOfDateWhenFinalDirExist(t *testing.T) {
 	tf := func(t *testing.T, env SSEnv) {
 		finalDir := env.GetFinalDir()
-		if err := env.fs.MkdirAll(finalDir, 0755); err != nil {
+		if err := env.fs.MkdirAll(finalDir, 0o755); err != nil {
 			t.Fatalf("%v", err)
 		}
 		m := &pb.Message{}

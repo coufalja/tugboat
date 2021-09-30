@@ -177,7 +177,7 @@ func TestRemoveSavedSnapshots(t *testing.T) {
 	if err := fs.RemoveAll(singleNodeHostTestDir); err != nil {
 		t.Fatalf("%v", err)
 	}
-	if err := fs.MkdirAll(singleNodeHostTestDir, 0755); err != nil {
+	if err := fs.MkdirAll(singleNodeHostTestDir, 0o755); err != nil {
 		t.Fatalf("%v", err)
 	}
 	defer func() {
@@ -187,13 +187,13 @@ func TestRemoveSavedSnapshots(t *testing.T) {
 	}()
 	for i := 0; i < 16; i++ {
 		ssdir := fs.PathJoin(singleNodeHostTestDir, fmt.Sprintf("snapshot-%X", i))
-		if err := fs.MkdirAll(ssdir, 0755); err != nil {
+		if err := fs.MkdirAll(ssdir, 0o755); err != nil {
 			t.Fatalf("failed to mkdir %v", err)
 		}
 	}
 	for i := 1; i <= 2; i++ {
 		ssdir := fs.PathJoin(singleNodeHostTestDir, fmt.Sprintf("mydata-%X", i))
-		if err := fs.MkdirAll(ssdir, 0755); err != nil {
+		if err := fs.MkdirAll(ssdir, 0o755); err != nil {
 			t.Fatalf("failed to mkdir %v", err)
 		}
 	}

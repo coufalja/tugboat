@@ -35,7 +35,7 @@ func (m *Membership) MarshalTo(dAtA []byte) (int, error) {
 	i++
 	i = encodeVarintRaft(dAtA, i, uint64(m.ConfigChangeId))
 	if len(m.Addresses) > 0 {
-		for k, _ := range m.Addresses {
+		for k := range m.Addresses {
 			dAtA[i] = 0x12
 			i++
 			v := m.Addresses[k]
@@ -51,7 +51,7 @@ func (m *Membership) MarshalTo(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.Removed) > 0 {
-		for k, _ := range m.Removed {
+		for k := range m.Removed {
 			dAtA[i] = 0x1a
 			i++
 			v := m.Removed[k]
@@ -71,7 +71,7 @@ func (m *Membership) MarshalTo(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.NonVotings) > 0 {
-		for k, _ := range m.NonVotings {
+		for k := range m.NonVotings {
 			dAtA[i] = 0x22
 			i++
 			v := m.NonVotings[k]
@@ -87,7 +87,7 @@ func (m *Membership) MarshalTo(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.Witnesses) > 0 {
-		for k, _ := range m.Witnesses {
+		for k := range m.Witnesses {
 			dAtA[i] = 0x2a
 			i++
 			v := m.Witnesses[k]

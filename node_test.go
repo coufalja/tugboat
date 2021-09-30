@@ -156,8 +156,7 @@ func getTestRaftNodes(count int, ordered bool,
 	return doGetTestRaftNodes(1, count, ordered, nil, fs)
 }
 
-type dummyEngine struct {
-}
+type dummyEngine struct{}
 
 func (d *dummyEngine) setCloseReady(n *node)            {}
 func (d *dummyEngine) setStepReady(clusterID uint64)    {}
@@ -192,10 +191,10 @@ func doGetTestRaftNodes(startID uint64, count int, ordered bool,
 	if ldb == nil {
 		nodeLogDir := fs.PathJoin(raftTestTopDir, logdbDir)
 		nodeLowLatencyLogDir := fs.PathJoin(raftTestTopDir, lowLatencyLogDBDir)
-		if err := fs.MkdirAll(nodeLogDir, 0755); err != nil {
+		if err := fs.MkdirAll(nodeLogDir, 0o755); err != nil {
 			panic(err)
 		}
-		if err := fs.MkdirAll(nodeLowLatencyLogDir, 0755); err != nil {
+		if err := fs.MkdirAll(nodeLowLatencyLogDir, 0o755); err != nil {
 			panic(err)
 		}
 		cfg := config.NodeHostConfig{
@@ -215,7 +214,7 @@ func doGetTestRaftNodes(startID uint64, count int, ordered bool,
 		// create the snapshotter object
 		nodeSnapDir := fmt.Sprintf(snapDir, testClusterID, i)
 		snapdir := fs.PathJoin(raftTestTopDir, nodeSnapDir)
-		if err := fs.MkdirAll(snapdir, 0755); err != nil {
+		if err := fs.MkdirAll(snapdir, 0o755); err != nil {
 			panic(err)
 		}
 		rootDirFunc := func(cid uint64, nid uint64) string {

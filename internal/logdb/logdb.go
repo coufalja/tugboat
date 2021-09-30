@@ -75,8 +75,7 @@ type IContext interface {
 }
 
 // DefaultFactory is the default factory for creating LogDB instance.
-type DefaultFactory struct {
-}
+type DefaultFactory struct{}
 
 // NewDefaultFactory creates a new DefaultFactory instance.
 func NewDefaultFactory() *DefaultFactory {

@@ -47,7 +47,7 @@ func removeTestDir(fs vfs.IFS) {
 
 func createTestDir(fs vfs.IFS) {
 	removeTestDir(fs)
-	if err := fs.MkdirAll(testSnapshotterDir, 0755); err != nil {
+	if err := fs.MkdirAll(testSnapshotterDir, 0o755); err != nil {
 		panic(err)
 	}
 }
@@ -2025,7 +2025,7 @@ func TestIsShrunkSnapshot(t *testing.T) {
 			if err := fs.RemoveAll(testSnapshotterDir); err != nil {
 				t.Fatalf("%v", err)
 			}
-			if err := fs.MkdirAll(testSnapshotterDir, 0755); err != nil {
+			if err := fs.MkdirAll(testSnapshotterDir, 0o755); err != nil {
 				t.Fatalf("mkdir failed %v", err)
 			}
 			snapshotter := newTestSnapshotter(fs)

@@ -100,7 +100,7 @@ func runChunkTest(t *testing.T,
 		trans.snapshotReceived, trans.dir, trans.nhConfig.GetDeploymentID(), fs)
 	ts := getTestChunk()
 	snapDir := chunks.dir(ts[0].ClusterId, ts[0].NodeId)
-	if err := fs.MkdirAll(snapDir, 0755); err != nil {
+	if err := fs.MkdirAll(snapDir, 0o755); err != nil {
 		t.Fatalf("%v", err)
 	}
 	fn(t, chunks, handler)
@@ -121,7 +121,7 @@ func TestMaxSlotIsEnforced(t *testing.T) {
 			v++
 			c.ClusterId = v
 			snapDir := chunks.dir(v, c.NodeId)
-			if err := chunks.fs.MkdirAll(snapDir, 0755); err != nil {
+			if err := chunks.fs.MkdirAll(snapDir, 0o755); err != nil {
 				t.Fatalf("%v", err)
 			}
 			if !chunks.addLocked(c) {
@@ -364,7 +364,7 @@ func TestOutOfDateChunkCanBeHandled(t *testing.T) {
 		inputs := getTestChunk()
 		env := chunks.getEnv(inputs[0])
 		snapDir := env.GetFinalDir()
-		if err := chunks.fs.MkdirAll(snapDir, 0755); err != nil {
+		if err := chunks.fs.MkdirAll(snapDir, 0o755); err != nil {
 			t.Errorf("failed to create dir %v", err)
 		}
 		chunks.validate = false

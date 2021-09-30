@@ -128,6 +128,7 @@ func encodeVarintSession(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return offset + 1
 }
+
 func (m *Session) Size() (n int) {
 	if m == nil {
 		return 0

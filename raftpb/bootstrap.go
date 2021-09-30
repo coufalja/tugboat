@@ -30,7 +30,7 @@ func (m *Bootstrap) MarshalTo(dAtA []byte) (int, error) {
 	var l int
 	_ = l
 	if len(m.Addresses) > 0 {
-		for k, _ := range m.Addresses {
+		for k := range m.Addresses {
 			dAtA[i] = 0xa
 			i++
 			v := m.Addresses[k]

@@ -40,10 +40,10 @@ const (
 func getNewTestDB(dir string, lldir string, fs vfs.IFS) raftio.ILogDB {
 	d := fs.PathJoin(rdbTestDirectory, dir)
 	lld := fs.PathJoin(rdbTestDirectory, lldir)
-	if err := fs.MkdirAll(d, 0777); err != nil {
+	if err := fs.MkdirAll(d, 0o777); err != nil {
 		panic(err)
 	}
-	if err := fs.MkdirAll(lld, 0777); err != nil {
+	if err := fs.MkdirAll(lld, 0o777); err != nil {
 		panic(err)
 	}
 	cfg := config.NodeHostConfig{
@@ -65,7 +65,7 @@ func deleteTestRDB(fs vfs.IFS) {
 
 func getTestSnapshotter(ldb raftio.ILogDB, fs vfs.IFS) *snapshotter {
 	fp := fs.PathJoin(rdbTestDirectory, "snapshot")
-	if err := fs.MkdirAll(fp, 0777); err != nil {
+	if err := fs.MkdirAll(fp, 0o777); err != nil {
 		panic(err)
 	}
 	f := func(cid uint64, nid uint64) string {
@@ -99,7 +99,7 @@ func TestFinalizeSnapshotReturnExpectedErrorWhenOutOfDate(t *testing.T) {
 		}
 		env := s.getEnv(ss.Index)
 		finalSnapDir := env.GetFinalDir()
-		if err := fs.MkdirAll(finalSnapDir, 0755); err != nil {
+		if err := fs.MkdirAll(finalSnapDir, 0o755); err != nil {
 			t.Errorf("failed to create final snap dir")
 		}
 		if err := env.CreateTempDir(); err != nil {
@@ -215,10 +215,10 @@ func TestZombieSnapshotDirsCanBeRemoved(t *testing.T) {
 		fd2 := env2.GetFinalDir()
 		fd1 = fd1 + "-100." + tmpSnapshotDirSuffix
 		fd2 = fd2 + "-100." + recvTmpDirSuffix
-		if err := fs.MkdirAll(fd1, 0755); err != nil {
+		if err := fs.MkdirAll(fd1, 0o755); err != nil {
 			t.Errorf("failed to create dir %v", err)
 		}
-		if err := fs.MkdirAll(fd2, 0755); err != nil {
+		if err := fs.MkdirAll(fd2, 0o755); err != nil {
 			t.Errorf("failed to create dir %v", err)
 		}
 		if err := s.processOrphans(); err != nil {
@@ -241,10 +241,10 @@ func TestSnapshotsNotInLogDBAreRemoved(t *testing.T) {
 		env2 := s.getEnv(200)
 		fd1 := env1.GetFinalDir()
 		fd2 := env2.GetFinalDir()
-		if err := fs.MkdirAll(fd1, 0755); err != nil {
+		if err := fs.MkdirAll(fd1, 0o755); err != nil {
 			t.Errorf("failed to create dir %v", err)
 		}
-		if err := fs.MkdirAll(fd2, 0755); err != nil {
+		if err := fs.MkdirAll(fd2, 0o755); err != nil {
 			t.Errorf("failed to create dir %v", err)
 		}
 		if err := s.processOrphans(); err != nil {
@@ -278,13 +278,13 @@ func TestOnlyMostRecentSnapshotIsKept(t *testing.T) {
 		if err := s.saveSnapshot(s1); err != nil {
 			t.Errorf("failed to save snapshot to logdb")
 		}
-		if err := fs.MkdirAll(fd1, 0755); err != nil {
+		if err := fs.MkdirAll(fd1, 0o755); err != nil {
 			t.Errorf("failed to create dir %v", err)
 		}
-		if err := fs.MkdirAll(fd2, 0755); err != nil {
+		if err := fs.MkdirAll(fd2, 0o755); err != nil {
 			t.Errorf("failed to create dir %v", err)
 		}
-		if err := fs.MkdirAll(fd3, 0755); err != nil {
+		if err := fs.MkdirAll(fd3, 0o755); err != nil {
 			t.Errorf("failed to create dir %v", err)
 		}
 		if err := s.processOrphans(); err != nil {
@@ -314,7 +314,7 @@ func TestFirstSnapshotBecomeOrphanedIsHandled(t *testing.T) {
 		}
 		env := s.getEnv(100)
 		fd1 := env.GetFinalDir()
-		if err := fs.MkdirAll(fd1, 0755); err != nil {
+		if err := fs.MkdirAll(fd1, 0o755); err != nil {
 			t.Errorf("failed to create dir %v", err)
 		}
 		if err := fileutil.CreateFlagFile(fd1, fileutil.SnapshotFlagFilename, &s1, fs); err != nil {
@@ -349,10 +349,10 @@ func TestOrphanedSnapshotRecordIsRemoved(t *testing.T) {
 		env2 := s.getEnv(s2.Index)
 		fd1 := env1.GetFinalDir()
 		fd2 := env2.GetFinalDir()
-		if err := fs.MkdirAll(fd1, 0755); err != nil {
+		if err := fs.MkdirAll(fd1, 0o755); err != nil {
 			t.Errorf("failed to create dir %v", err)
 		}
-		if err := fs.MkdirAll(fd2, 0755); err != nil {
+		if err := fs.MkdirAll(fd2, 0o755); err != nil {
 			t.Errorf("failed to create dir %v", err)
 		}
 		if err := fileutil.CreateFlagFile(fd1, fileutil.SnapshotFlagFilename, &s1, fs); err != nil {
@@ -420,13 +420,13 @@ func TestOrphanedSnapshotsCanBeProcessed(t *testing.T) {
 		fd2 := env2.GetFinalDir()
 		fd3 := env3.GetFinalDir()
 		fd4 := fmt.Sprintf("%s%s", fd3, "xx")
-		if err := fs.MkdirAll(fd1, 0755); err != nil {
+		if err := fs.MkdirAll(fd1, 0o755); err != nil {
 			t.Errorf("failed to create dir %v", err)
 		}
-		if err := fs.MkdirAll(fd2, 0755); err != nil {
+		if err := fs.MkdirAll(fd2, 0o755); err != nil {
 			t.Errorf("failed to create dir %v", err)
 		}
-		if err := fs.MkdirAll(fd4, 0755); err != nil {
+		if err := fs.MkdirAll(fd4, 0o755); err != nil {
 			t.Errorf("failed to create dir %v", err)
 		}
 		if err := fileutil.CreateFlagFile(fd1, fileutil.SnapshotFlagFilename, &s1, fs); err != nil {

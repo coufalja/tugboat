@@ -74,8 +74,10 @@ func getTestPort() int {
 	return defaultTestPort
 }
 
-var rttMillisecond uint64
-var mu sync.Mutex
+var (
+	rttMillisecond uint64
+	mu             sync.Mutex
+)
 
 var rttValues = []uint64{10, 20, 30, 50, 100, 200, 500}
 
@@ -94,7 +96,7 @@ func calcRTTMillisecond(fs vfs.IFS, dir string) uint64 {
 	defer func() {
 		_ = fs.RemoveAll(testFile)
 	}()
-	_ = fs.MkdirAll(dir, 0755)
+	_ = fs.MkdirAll(dir, 0o755)
 	f, err := fs.Create(testFile)
 	if err != nil {
 		panic(err)
@@ -407,8 +409,7 @@ func (t *TimeoutStateMachine) Close() error {
 	return nil
 }
 
-type noopLogDB struct {
-}
+type noopLogDB struct{}
 
 func (n *noopLogDB) BinaryFormat() uint32                                      { return 0 }
 func (n *noopLogDB) Name() string                                              { return "noopLogDB" }
@@ -419,6 +420,7 @@ func (n *noopLogDB) ListNodeInfo() ([]raftio.NodeInfo, error)                  {
 func (n *noopLogDB) SaveBootstrapInfo(clusterID uint64, nodeID uint64, bs pb.Bootstrap) error {
 	return nil
 }
+
 func (n *noopLogDB) GetBootstrapInfo(clusterID uint64, nodeID uint64) (pb.Bootstrap, error) {
 	return pb.Bootstrap{}, nil
 }
@@ -428,6 +430,7 @@ func (n *noopLogDB) IterateEntries(ents []pb.Entry,
 	high uint64, maxSize uint64) ([]pb.Entry, uint64, error) {
 	return nil, 0, nil
 }
+
 func (n *noopLogDB) ReadRaftState(clusterID uint64, nodeID uint64,
 	lastIndex uint64) (raftio.RaftState, error) {
 	return raftio.RaftState{}, nil
@@ -442,15 +445,18 @@ func (n *noopLogDB) SaveSnapshots([]pb.Update) error                      { retu
 func (n *noopLogDB) GetSnapshot(clusterID uint64, nodeID uint64) (pb.Snapshot, error) {
 	return pb.Snapshot{}, nil
 }
+
 func (n *noopLogDB) ImportSnapshot(snapshot pb.Snapshot, nodeID uint64) error {
 	return nil
 }
 
-type updateConfig func(*config.Config) *config.Config
-type updateNodeHostConfig func(*config.NodeHostConfig) *config.NodeHostConfig
-type testFunc func(*NodeHost)
-type beforeTest func()
-type afterTest func(*NodeHost)
+type (
+	updateConfig         func(*config.Config) *config.Config
+	updateNodeHostConfig func(*config.NodeHostConfig) *config.NodeHostConfig
+	testFunc             func(*NodeHost)
+	beforeTest           func()
+	afterTest            func(*NodeHost)
+)
 
 type testOption struct {
 	updateConfig         updateConfig
@@ -699,8 +705,7 @@ func TestTransportFactoryCanBeSet(t *testing.T) {
 	runNodeHostTest(t, to, fs)
 }
 
-type validatorTestModule struct {
-}
+type validatorTestModule struct{}
 
 func (tm *validatorTestModule) Create(nhConfig config.NodeHostConfig,
 	handler raftio.MessageHandler,
@@ -1571,7 +1576,7 @@ func testZombieSnapshotDirWillBeDeletedDuringAddCluster(t *testing.T, dirName st
 			}
 			snapDir := nh.env.GetSnapshotDir(did, 1, 1)
 			z1 = fs.PathJoin(snapDir, dirName)
-			if err := fs.MkdirAll(z1, 0755); err != nil {
+			if err := fs.MkdirAll(z1, 0o755); err != nil {
 				t.Fatalf("failed to create dir %v", err)
 			}
 		},
@@ -2830,7 +2835,7 @@ func TestSnapshotCanBeExportedAfterSnapshotting(t *testing.T) {
 			if err := fs.RemoveAll(sspath); err != nil {
 				t.Fatalf("%v", err)
 			}
-			if err := fs.MkdirAll(sspath, 0755); err != nil {
+			if err := fs.MkdirAll(sspath, 0o755); err != nil {
 				t.Fatalf("%v", err)
 			}
 			defer func() {
@@ -3279,7 +3284,7 @@ func TestSnapshotCanBeExported(t *testing.T) {
 			if err := fs.RemoveAll(sspath); err != nil {
 				t.Fatalf("%v", err)
 			}
-			if err := fs.MkdirAll(sspath, 0755); err != nil {
+			if err := fs.MkdirAll(sspath, 0o755); err != nil {
 				t.Fatalf("%v", err)
 			}
 			defer func() {
@@ -3382,7 +3387,7 @@ func TestOnDiskStateMachineCanExportSnapshot(t *testing.T) {
 			if err := fs.RemoveAll(sspath); err != nil {
 				t.Fatalf("%v", err)
 			}
-			if err := fs.MkdirAll(sspath, 0755); err != nil {
+			if err := fs.MkdirAll(sspath, 0o755); err != nil {
 				t.Fatalf("%v", err)
 			}
 			defer func() {
@@ -3479,9 +3484,7 @@ type chunks struct {
 	confirmed uint64
 }
 
-var (
-	testSnapshotDir = "test_snapshot_dir_safe_to_delete"
-)
+var testSnapshotDir = "test_snapshot_dir_safe_to_delete"
 
 func (c *chunks) onReceive(pb.MessageBatch) {
 	c.received++
@@ -3562,7 +3565,7 @@ func testCorruptedChunkWriterOutputCanBeHandledByChunk(t *testing.T,
 		t.Fatalf("%v", err)
 	}
 	c := &chunks{}
-	if err := fs.MkdirAll(c.getSnapshotDirFunc(0, 0), 0755); err != nil {
+	if err := fs.MkdirAll(c.getSnapshotDirFunc(0, 0), 0o755); err != nil {
 		t.Fatalf("%v", err)
 	}
 	cks := transport.NewChunk(c.onReceive,
@@ -3605,7 +3608,7 @@ func TestChunkWriterOutputCanBeHandledByChunk(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 	c := &chunks{}
-	if err := fs.MkdirAll(c.getSnapshotDirFunc(0, 0), 0755); err != nil {
+	if err := fs.MkdirAll(c.getSnapshotDirFunc(0, 0), 0o755); err != nil {
 		t.Fatalf("%v", err)
 	}
 	cks := transport.NewChunk(c.onReceive,
