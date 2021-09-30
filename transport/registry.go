@@ -29,9 +29,7 @@ import (
 // is unknown.
 var ErrUnknownTarget = errors.New("target address unknown")
 
-var (
-	_ IResolver = (*Registry)(nil)
-)
+var _ IResolver = (*Registry)(nil)
 
 // Registry is used to manage all known node addresses in the multi raft system.
 // The transport layer uses this address registry to locate nodes.
