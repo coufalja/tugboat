@@ -345,6 +345,7 @@ func TestPendingSnapshotCanBeRequested(t *testing.T) {
 	}
 	if ss == nil {
 		t.Errorf("nil ss returned")
+		return
 	}
 	if ps.pending == nil {
 		t.Errorf("pending not set")
@@ -445,6 +446,7 @@ func TestPendingSnapshotCanBeApplied(t *testing.T) {
 	}
 	if ss == nil {
 		t.Errorf("nil ss returned")
+		return
 	}
 	ps.apply(ss.key, false, false, 123)
 	select {
@@ -469,6 +471,7 @@ func TestPendingSnapshotCanBeIgnored(t *testing.T) {
 	}
 	if ss == nil {
 		t.Errorf("nil ss returned")
+		return
 	}
 	ps.apply(ss.key, true, false, 123)
 	select {
@@ -493,6 +496,7 @@ func TestPendingSnapshotIsIdentifiedByTheKey(t *testing.T) {
 	}
 	if ss == nil {
 		t.Errorf("nil ss returned")
+		return
 	}
 	if ps.pending == nil {
 		t.Errorf("pending not set")

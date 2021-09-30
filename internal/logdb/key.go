@@ -37,7 +37,6 @@ var (
 	nodeInfoKeyHeader        = [2]byte{0x4, 0x4}
 	snapshotKeyHeader        = [2]byte{0x5, 0x5}
 	bootstrapKeyHeader       = [2]byte{0x6, 0x6}
-	entryBatchKeyHeader      = [2]byte{0x7, 0x7}
 )
 
 // Key represents keys that are managed by a sync.Pool to be reused.

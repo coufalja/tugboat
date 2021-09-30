@@ -71,7 +71,6 @@ var (
 var (
 	plog                = logger.GetLogger("transport")
 	sendQueueLen        = 1024 * 2
-	dialTimeoutSecond   = 15
 	idleTimeout         = time.Minute
 	errChunkSendSkipped = errors.New("chunk skipped")
 	errBatchSendSkipped = errors.New("batch skipped")

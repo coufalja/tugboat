@@ -221,12 +221,12 @@ func TestHasEntryRecord(t *testing.T) {
 			t.Errorf("unexpected result")
 		}
 		eb := pb.EntryBatch{}
-		data, err := eb.Marshal()
+		_, err = eb.Marshal()
 		if err != nil {
 			t.Fatalf("%v", err)
 		}
 		ent := pb.Entry{}
-		data, err = ent.Marshal()
+		data, err := ent.Marshal()
 		if err != nil {
 			t.Fatalf("%v", err)
 		}

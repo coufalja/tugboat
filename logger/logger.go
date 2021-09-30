@@ -148,15 +148,3 @@ func createSysLoggers() *sysLoggers {
 func createDefaultILogger(pkgName string) ILogger {
 	return CreateCapnsLog(pkgName)
 }
-
-type nullLogger struct{}
-
-var _ ILogger = (*nullLogger)(nil)
-var _nullLogger = nullLogger{}
-
-func (nullLogger) SetLevel(LogLevel)                           {}
-func (nullLogger) Debugf(format string, args ...interface{})   {}
-func (nullLogger) Infof(format string, args ...interface{})    {}
-func (nullLogger) Warningf(format string, args ...interface{}) {}
-func (nullLogger) Errorf(format string, args ...interface{})   {}
-func (nullLogger) Panicf(format string, args ...interface{})   {}
