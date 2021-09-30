@@ -39,7 +39,6 @@ import (
 	"github.com/lni/goutils/random"
 )
 
-// random delays
 func generateRandomDelay() {
 	v := rand.Uint64()
 	if v%10000 == 0 {
@@ -286,7 +285,7 @@ func (s *KVTest) RecoverFromSnapshot(r io.Reader,
 	return nil
 }
 
-// Close closes the IStateMachine instance
+// Close closes the IStateMachine instance.
 func (s *KVTest) Close() error {
 	s.closed = true
 	log.Printf("%d:%dKVStore has been closed", s.ClusterID, s.NodeID)

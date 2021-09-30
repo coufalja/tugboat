@@ -50,10 +50,10 @@ const (
 	// IStateMachine.
 	RegularStateMachine = 1
 	// ConcurrentStateMachine is the state machine type that implements
-	// IConcurrentStateMachine
+	// IConcurrentStateMachine.
 	ConcurrentStateMachine = 2
 	// OnDiskStateMachine is the state machine type that implements
-	// IOnDiskStateMachine
+	// IOnDiskStateMachine.
 	OnDiskStateMachine = 3
 )
 

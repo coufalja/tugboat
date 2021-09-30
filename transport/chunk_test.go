@@ -19,13 +19,12 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/lni/goutils/leaktest"
-
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/leaktest"
 )
 
 func getTestChunk() []pb.Chunk {
@@ -359,7 +358,7 @@ func TestChunkAreIgnoredWhenNodeIsRemoved(t *testing.T) {
 	runChunkTest(t, fn, fs)
 }
 
-// when there is no flag file
+// when there is no flag file.
 func TestOutOfDateChunkCanBeHandled(t *testing.T) {
 	fn := func(t *testing.T, chunks *Chunk, handler *testMessageHandler) {
 		inputs := getTestChunk()

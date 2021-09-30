@@ -19,18 +19,15 @@ import (
 	"math"
 
 	"github.com/cockroachdb/errors"
-	"github.com/coufalja/tugboat/internal/server"
-
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/logdb/kv"
+	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 )
 
-var (
-	batchSize = uint64(server.LogDBEntryBatchSize)
-)
+var batchSize = uint64(server.LogDBEntryBatchSize)
 
 type entryManager interface {
 	binaryFormat() uint32

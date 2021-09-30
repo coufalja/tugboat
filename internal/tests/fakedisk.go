@@ -145,7 +145,7 @@ func (f *FakeDiskSM) GetHash() (uint64, error) {
 	return 0, nil
 }
 
-// SimDiskSM is a fake disk based state machine used for testing purposes
+// SimDiskSM is a fake disk based state machine used for testing purposes.
 type SimDiskSM struct {
 	applied   uint64
 	recovered uint64

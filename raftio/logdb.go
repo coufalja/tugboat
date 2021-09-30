@@ -16,7 +16,6 @@ package raftio
 
 import (
 	"github.com/cockroachdb/errors"
-
 	pb "github.com/coufalja/tugboat/raftpb"
 )
 

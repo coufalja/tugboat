@@ -23,14 +23,13 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/leaktest"
-	"github.com/stretchr/testify/require"
-
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/leaktest"
+	"github.com/stretchr/testify/require"
 )
 
 const (

@@ -24,19 +24,16 @@ import (
 	"reflect"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/netutil"
-	"github.com/lni/goutils/stringutil"
-
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/netutil"
+	"github.com/lni/goutils/stringutil"
 )
 
-var (
-	plog = logger.GetLogger("config")
-)
+var plog = logger.GetLogger("config")
 
 const (
 	// don't change these, see the comments on ExpertConfig.

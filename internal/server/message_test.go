@@ -17,9 +17,8 @@ package server
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMessageQueueCanBeCreated(t *testing.T) {

@@ -47,17 +47,16 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/logutil"
-	"github.com/lni/goutils/netutil"
-	circuit "github.com/lni/goutils/netutil/rubyist/circuitbreaker"
-	"github.com/lni/goutils/syncutil"
-
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/logutil"
+	"github.com/lni/goutils/netutil"
+	circuit "github.com/lni/goutils/netutil/rubyist/circuitbreaker"
+	"github.com/lni/goutils/syncutil"
 )
 
 const (
@@ -65,12 +64,9 @@ const (
 )
 
 var (
-	lazyFreeCycle = 1
-)
-
-var (
 	plog                = logger.GetLogger("transport")
 	sendQueueLen        = 1024 * 2
+	lazyFreeCycle       = 1
 	idleTimeout         = time.Minute
 	errChunkSendSkipped = errors.New("chunk skipped")
 	errBatchSendSkipped = errors.New("batch skipped")
@@ -239,7 +235,7 @@ func NewTransport(nhConfig config.NodeHostConfig,
 	return t, nil
 }
 
-// Name returns the type name of the transport module
+// Name returns the type name of the transport module.
 func (t *Transport) Name() string {
 	return t.trans.Name()
 }
@@ -388,7 +384,7 @@ func (t *Transport) send(req pb.Message) (bool, failedSend) {
 }
 
 // connectAndProcess returns a boolean value indicating whether it is stopped
-// gracefully when the system is being shutdown
+// gracefully when the system is being shutdown.
 func (t *Transport) connectAndProcess(remoteHost string,
 	sq sendQueue, from uint64, affected nodeMap) bool {
 	breaker := t.GetCircuitBreaker(remoteHost)

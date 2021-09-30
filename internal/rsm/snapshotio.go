@@ -40,7 +40,7 @@ const (
 	// HeaderSize is the size of snapshot in number of bytes.
 	HeaderSize uint64 = 1024
 	// which checksum type to use.
-	// CRC32IEEE and google's highway hash are supported
+	// CRC32IEEE and google's highway hash are supported.
 	defaultChecksumType = pb.CRC32IEEE
 	// DefaultChecksumType is the default checksum type.
 	DefaultChecksumType = defaultChecksumType

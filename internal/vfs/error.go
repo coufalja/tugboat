@@ -27,19 +27,19 @@ type Injector = gvfs.Injector
 // ErrorFS is a gvfs.FS implementation.
 type ErrorFS = gvfs.ErrorFS
 
-// InjectIndex implements Injector
+// InjectIndex implements Injector.
 type InjectIndex = gvfs.InjectIndex
 
 // Op is an enum describing the type of FS operations.
 type Op = gvfs.Op
 
-// OpRead describes read operations
+// OpRead describes read operations.
 var OpRead = gvfs.OpRead
 
-// OpWrite describes write operations
+// OpWrite describes write operations.
 var OpWrite = gvfs.OpWrite
 
-// OpSync describes the fsync operation
+// OpSync describes the fsync operation.
 var OpSync = gvfs.OpSync
 
 // OnIndex creates and returns an injector instance that returns an ErrInjected

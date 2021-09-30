@@ -301,7 +301,7 @@ func TestLogReaderApplySnapshot(t *testing.T) {
 		{Index: 3, Term: 3, Membership: *cs},
 	}
 	s := getTestLogReader(ents, fs)
-	//Apply Snapshot successful
+	// Apply Snapshot successful.
 	i := 0
 	tt := tests[i]
 	err := s.ApplySnapshot(tt)
@@ -314,7 +314,7 @@ func TestLogReaderApplySnapshot(t *testing.T) {
 	if _, li := s.GetRange(); li != 4 {
 		t.Errorf("last index %d, want 4", li)
 	}
-	//Apply Snapshot fails due to ErrSnapOutOfDate
+	// Apply Snapshot fails due to ErrSnapOutOfDate.
 	i = 1
 	tt = tests[i]
 	err = s.ApplySnapshot(tt)

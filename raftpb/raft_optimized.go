@@ -25,9 +25,9 @@ var (
 
 var intconv = binary.BigEndian
 
-// Colfer configuration attributes
+// Colfer configuration attributes.
 var (
-	// ColferSizeMax is the upper limit for serial byte sizes
+	// ColferSizeMax is the upper limit for serial byte sizes.
 	ColferSizeMax uint64 = 8 * 1024 * 1024 * 1024 * 1024
 )
 
@@ -80,7 +80,7 @@ func (m *Entry) SizeUpperLimit() int {
 	return l
 }
 
-// Size returns the actual size of an entry
+// Size returns the actual size of an entry.
 func (m *Entry) Size() int {
 	l := 1
 

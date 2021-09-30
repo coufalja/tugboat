@@ -22,19 +22,16 @@ import (
 	"sync"
 
 	"github.com/cockroachdb/pebble"
-	"github.com/lni/goutils/syncutil"
-
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/logdb/kv"
 	"github.com/coufalja/tugboat/internal/utils"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
+	"github.com/lni/goutils/syncutil"
 )
 
-var (
-	plog = logger.GetLogger("pebblekv")
-)
+var plog = logger.GetLogger("pebblekv")
 
 const (
 	maxLogFileSize = 1024 * 1024 * 128
@@ -120,7 +117,7 @@ type pebbleLogger struct{}
 
 var _ pebble.Logger = (*pebbleLogger)(nil)
 
-// PebbleLogger is the logger used by pebble
+// PebbleLogger is the logger used by pebble.
 var PebbleLogger pebbleLogger
 
 func (pebbleLogger) Infof(format string, args ...interface{}) {

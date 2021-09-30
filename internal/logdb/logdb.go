@@ -28,9 +28,7 @@ import (
 	pb "github.com/coufalja/tugboat/raftpb"
 )
 
-var (
-	plog = logger.GetLogger("logdb")
-)
+var plog = logger.GetLogger("logdb")
 
 // IReusableKey is the interface for keys that can be reused. A reusable key is
 // usually obtained by calling the GetKey() function of the IContext

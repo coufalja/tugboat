@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	// MaxKeyLength is the max length of keys allowed
+	// MaxKeyLength is the max length of keys allowed.
 	MaxKeyLength uint64 = 1024
 )
 
@@ -28,7 +28,7 @@ const (
 type Factory func(config.LogDBConfig,
 	LogDBCallback, string, string, vfs.IFS) (IKVStore, error)
 
-// LogDBCallback is a callback function called by the LogDB
+// LogDBCallback is a callback function called by the LogDB.
 type LogDBCallback func(busy bool)
 
 // IWriteBatch is the interface representing a write batch capable of

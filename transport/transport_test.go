@@ -27,16 +27,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lni/goutils/leaktest"
-	"github.com/lni/goutils/netutil"
-	"github.com/lni/goutils/syncutil"
-
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	"github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/leaktest"
+	"github.com/lni/goutils/netutil"
+	"github.com/lni/goutils/syncutil"
 )
 
 var serverAddress = fmt.Sprintf("localhost:%d", getTestPort())
@@ -376,6 +375,7 @@ func newTestTransport(handler IMessageHandler,
 // net.core.rmem_max = 25165824
 // net.ipv4.tcp_rmem = 4096 87380 25165824
 // net.ipv4.tcp_wmem = 4096 87380 25165824
+
 func testMessageCanBeSentWithLargeLatency(t *testing.T, mutualTLS bool, fs vfs.IFS) {
 	handler := newTestMessageHandler()
 	trans, nodes, stopper, _ := newTestTransport(handler, mutualTLS, fs)
@@ -416,7 +416,7 @@ func testMessageCanBeSentWithLargeLatency(t *testing.T, mutualTLS bool, fs vfs.I
 	}
 }
 
-// latency need to be simulated by configuring your environment
+// latency need to be simulated by configuring your environment.
 func TestMessageCanBeSentWithLargeLatency(t *testing.T) {
 	fs := vfs.GetTestFS()
 	defer leaktest.AfterTest(t)()
@@ -651,7 +651,6 @@ func waitForTotalSnapshotStatusUpdateCount(handler *testMessageHandler,
 			return
 		}
 	}
-
 }
 
 func waitForFirstSnapshotStatusUpdate(handler *testMessageHandler,
@@ -1206,7 +1205,7 @@ func TestCircuitBreakerForResolveNotShared(t *testing.T) {
 	}
 }
 
-// unknown target
+// unknown target.
 func TestStreamToUnknownTargetWillHaveSnapshotStatusUpdated(t *testing.T) {
 	fs := vfs.GetTestFS()
 	handler := newTestMessageHandler()
@@ -1229,7 +1228,7 @@ func TestStreamToUnknownTargetWillHaveSnapshotStatusUpdated(t *testing.T) {
 	}
 }
 
-// failed to connect
+// failed to connect.
 func TestFailedStreamConnectionWillHaveSnapshotStatusUpdated(t *testing.T) {
 	fs := vfs.GetTestFS()
 	handler := newTestMessageHandler()
@@ -1257,7 +1256,7 @@ func TestFailedStreamConnectionWillHaveSnapshotStatusUpdated(t *testing.T) {
 	}
 }
 
-// failed to connect due to too many connections
+// failed to connect due to too many connections.
 func TestFailedStreamingDueToTooManyConnectionsHaveStatusUpdated(t *testing.T) {
 	fs := vfs.GetTestFS()
 	handler := newTestMessageHandler()

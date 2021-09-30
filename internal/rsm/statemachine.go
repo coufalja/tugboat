@@ -26,8 +26,6 @@ import (
 	"sync/atomic"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/logutil"
-
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/raft"
 	"github.com/coufalja/tugboat/internal/server"
@@ -36,15 +34,14 @@ import (
 	"github.com/coufalja/tugboat/logger"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
+	"github.com/lni/goutils/logutil"
 )
 
-var (
-	plog = logger.GetLogger("rsm")
-)
+var plog = logger.GetLogger("rsm")
 
 var (
 	// ErrRestoreSnapshot indicates there is error when trying to restore
-	// from a snapshot
+	// from a snapshot.
 	ErrRestoreSnapshot             = errors.New("failed to restore snapshot")
 	sessionBufferInitialCap uint64 = 128 * 1024
 )
@@ -132,7 +129,7 @@ func (t *Task) isSyncTask() bool {
 	return t.PeriodicSync
 }
 
-// SMFactoryFunc is the function type for creating an IStateMachine instance
+// SMFactoryFunc is the function type for creating an IStateMachine instance.
 type SMFactoryFunc func(clusterID uint64,
 	nodeID uint64, done <-chan struct{}) IManagedStateMachine
 
@@ -288,7 +285,7 @@ func (s *StateMachine) mustBeOnDiskSM() {
 }
 
 // isShrunkSnapshot determines if the snapshot is shrunk. This check involves
-// disk I/O
+// disk I/O.
 func (s *StateMachine) isShrunkSnapshot(ss pb.Snapshot, init bool) (bool, error) {
 	if !s.OnDiskStateMachine() {
 		return false, nil
@@ -432,7 +429,7 @@ func (s *StateMachine) applyOnDisk(ss pb.Snapshot, init bool) {
 	}
 }
 
-//TODO: add test to cover the case when ReadyToStreamSnapshot returns false
+// TODO: add test to cover the case when ReadyToStreamSnapshot returns false
 
 // ReadyToStream returns a boolean flag to indicate whether the state machine
 // is ready to stream snapshot. It can not stream a full snapshot when
@@ -1012,7 +1009,7 @@ func (s *StateMachine) noop(e pb.Entry) {
 	}
 }
 
-// result is a tuple of (result, should ignore, rejected, error)
+// result is a tuple of (result, should ignore, rejected, error).
 func (s *StateMachine) update(e pb.Entry) (sm.Result, bool, bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

@@ -18,9 +18,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/lni/goutils/cache"
-
 	sm "github.com/coufalja/tugboat/statemachine"
+	"github.com/lni/goutils/cache"
 )
 
 func TestRegisteriAndUnregisterClient(t *testing.T) {

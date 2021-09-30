@@ -25,8 +25,6 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/random"
-
 	"github.com/coufalja/tugboat/client"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/fileutil"
@@ -34,6 +32,7 @@ import (
 	"github.com/coufalja/tugboat/logger"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
+	"github.com/lni/goutils/random"
 )
 
 const (
@@ -41,9 +40,7 @@ const (
 	pendingProposalShards uint64 = 16
 )
 
-var (
-	plog = logger.GetLogger("dragonboat")
-)
+var plog = logger.GetLogger("dragonboat")
 
 var (
 	// ErrInvalidOperation indicates that the requested operation is not allowed.
@@ -82,7 +79,7 @@ var (
 	// ErrInvalidTarget indicates that the specified node id invalid.
 	ErrInvalidTarget = errors.New("invalid target node ID")
 	// ErrInvalidNodeHostID indicates that the NodeHost ID value provided is
-	// invalid
+	// invalid.
 	ErrInvalidNodeHostID = errors.New("invalid NodeHost ID value")
 )
 

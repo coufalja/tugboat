@@ -17,9 +17,8 @@ package fileutil
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/coufalja/tugboat/internal/vfs"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTempDir(t *testing.T) {

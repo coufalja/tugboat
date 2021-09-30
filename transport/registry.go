@@ -19,18 +19,15 @@ import (
 	"sync"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/logutil"
-
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/raftio"
+	"github.com/lni/goutils/logutil"
 )
 
-var (
-	// ErrUnknownTarget is the error returned when the target address of the node
-	// is unknown.
-	ErrUnknownTarget = errors.New("target address unknown")
-)
+// ErrUnknownTarget is the error returned when the target address of the node
+// is unknown.
+var ErrUnknownTarget = errors.New("target address unknown")
 
 // INodeRegistry is the local registry interface used to keep all known
 // nodes in the system..
@@ -42,8 +39,10 @@ type INodeRegistry interface {
 	Resolve(clusterID uint64, nodeID uint64) (string, string, error)
 }
 
-var _ INodeRegistry = (*Registry)(nil)
-var _ IResolver = (*Registry)(nil)
+var (
+	_ INodeRegistry = (*Registry)(nil)
+	_ IResolver     = (*Registry)(nil)
+)
 
 // Registry is used to manage all known node addresses in the multi raft system.
 // The transport layer uses this address registry to locate nodes.
@@ -92,7 +91,7 @@ func (n *Registry) Remove(clusterID uint64, nodeID uint64) {
 	n.addr.Delete(raftio.GetNodeInfo(clusterID, nodeID))
 }
 
-// RemoveCluster removes all nodes info associated with the specified cluster
+// RemoveCluster removes all nodes info associated with the specified cluster.
 func (n *Registry) RemoveCluster(clusterID uint64) {
 	var toRemove []raftio.NodeInfo
 	n.addr.Range(func(k, v interface{}) bool {

@@ -19,10 +19,6 @@ import (
 	"sync/atomic"
 
 	"github.com/cockroachdb/errors"
-	"github.com/coufalja/tugboat/transport"
-	"github.com/lni/goutils/logutil"
-	"github.com/lni/goutils/syncutil"
-
 	"github.com/coufalja/tugboat/client"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/fileutil"
@@ -33,6 +29,9 @@ import (
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
+	"github.com/coufalja/tugboat/transport"
+	"github.com/lni/goutils/logutil"
+	"github.com/lni/goutils/syncutil"
 )
 
 const (
@@ -1350,7 +1349,7 @@ func (n *node) reportRecoverSnapshot(rec rsm.Task) {
 }
 
 // returns a boolean flag indicating whether to skip task handling for the
-// current node
+// current node.
 func (n *node) processStatusTransition() bool {
 	if n.processSaveStatus() {
 		return true

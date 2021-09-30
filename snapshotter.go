@@ -18,8 +18,6 @@ import (
 	"strconv"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/logutil"
-
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/logdb"
 	"github.com/coufalja/tugboat/internal/rsm"
@@ -29,6 +27,7 @@ import (
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
+	"github.com/lni/goutils/logutil"
 )
 
 func compressionType(ct pb.CompressionType) dio.CompressionType {

@@ -30,7 +30,6 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/cockroachdb/errors/oserror"
-
 	"github.com/coufalja/tugboat/internal/utils"
 	"github.com/coufalja/tugboat/internal/vfs"
 	pb "github.com/coufalja/tugboat/raftpb"
@@ -327,8 +326,10 @@ func ExtractTarBz2(bz2fn string, toDir string, fs vfs.IFS) (err error) {
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 //
-var rand uint32
-var randmu sync.Mutex
+var (
+	rand   uint32
+	randmu sync.Mutex
+)
 
 func reseed() uint32 {
 	return uint32(time.Now().UnixNano())

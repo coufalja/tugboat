@@ -27,7 +27,7 @@ import (
 var (
 	nhidRe = regexp.MustCompile("^nhid-([0-9]*)$")
 	// ErrInvalidNodeHostID indicates that the NodeHost ID value provided is
-	// invalid
+	// invalid.
 	ErrInvalidNodeHostID = errors.New("invalid NodeHost ID value")
 )
 
@@ -96,7 +96,7 @@ func (n *NodeHostID) Marshal() ([]byte, error) {
 	return buf, nil
 }
 
-// MarshalTo is not implemented
+// MarshalTo is not implemented.
 func (n *NodeHostID) MarshalTo(result []byte) (int, error) {
 	panic("not implemented")
 }

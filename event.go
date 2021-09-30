@@ -20,7 +20,6 @@ import (
 	"sync/atomic"
 
 	"github.com/VictoriaMetrics/metrics"
-
 	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/raftio"
 )

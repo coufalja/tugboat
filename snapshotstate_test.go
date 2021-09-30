@@ -18,10 +18,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/lni/goutils/leaktest"
-
 	"github.com/coufalja/tugboat/internal/rsm"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/leaktest"
 )
 
 func TestSnapshotTaskCanBeSet(t *testing.T) {

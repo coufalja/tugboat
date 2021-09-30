@@ -39,7 +39,6 @@ import (
 	"math"
 
 	"github.com/cockroachdb/errors"
-
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/vfs"
 	pb "github.com/coufalja/tugboat/raftpb"
@@ -194,7 +193,7 @@ type blockReader struct {
 
 // the input reader should be a reader to all blocks, thus the 16 bytes length
 // and magic number fields should not be included, use a io.LimitReader to
-// exclude them
+// exclude them.
 func newBlockReader(r io.Reader,
 	blockSize uint64, t pb.ChecksumType) *blockReader {
 	return &blockReader{

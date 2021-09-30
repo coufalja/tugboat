@@ -24,10 +24,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coufalja/tugboat/transport"
-	"github.com/lni/goutils/leaktest"
-	"github.com/lni/goutils/random"
-
 	"github.com/coufalja/tugboat/client"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/logdb"
@@ -39,6 +35,9 @@ import (
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
+	"github.com/coufalja/tugboat/transport"
+	"github.com/lni/goutils/leaktest"
+	"github.com/lni/goutils/random"
 )
 
 const (

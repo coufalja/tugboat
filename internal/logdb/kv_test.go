@@ -23,12 +23,11 @@ import (
 	"testing"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/leaktest"
-
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/logdb/kv"
 	"github.com/coufalja/tugboat/internal/vfs"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/leaktest"
 )
 
 func TestKVCanBeCreatedAndClosed(t *testing.T) {
@@ -351,8 +350,10 @@ func TestCompactionReleaseStorageSpace(t *testing.T) {
 	}
 }
 
-var flagContent = "YYYY"
-var corruptedContent = "XXXX"
+var (
+	flagContent      = "YYYY"
+	corruptedContent = "XXXX"
+)
 
 func getDataFilePathList(dir string, wal bool, fs vfs.IFS) ([]string, error) {
 	elms, err := fs.List(dir)
@@ -552,7 +553,7 @@ func TestSSTCorruptionIsHandled(t *testing.T) {
 	testDiskCorruptionIsHandled(t, false, false, fs)
 }
 
-// see testDiskCorruptionIsHandled's comments for more details
+// see testDiskCorruptionIsHandled's comments for more details.
 func TestWALCorruptionIsHandled(t *testing.T) {
 	fs := vfs.GetTestFS()
 	testDiskCorruptionIsHandled(t, true, false, fs)

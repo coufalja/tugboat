@@ -21,11 +21,10 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/stringutil"
-
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/raftio"
 	"github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/stringutil"
 )
 
 var (
@@ -122,7 +121,7 @@ func (c *NOOPSnapshotConnection) SendChunk(chunk raftpb.Chunk) error {
 	return nil
 }
 
-// NOOPTransportFactory is a NOOP transport module used in testing
+// NOOPTransportFactory is a NOOP transport module used in testing.
 type NOOPTransportFactory struct{}
 
 // Create creates a noop transport instance.

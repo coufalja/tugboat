@@ -27,18 +27,15 @@ import (
 	"sort"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/logutil"
-	"github.com/lni/goutils/random"
-
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/logger"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/logutil"
+	"github.com/lni/goutils/random"
 )
 
-var (
-	plog = logger.GetLogger("raft")
-)
+var plog = logger.GetLogger("raft")
 
 const (
 	// NoLeader is the flag used to indcate that there is no leader or the leader
@@ -92,6 +89,7 @@ func ClusterID(clusterID uint64) string {
 }
 
 type handlerFunc func(pb.Message) error
+
 type stepFunc func(*raft, pb.Message) error
 
 // Status is the struct that captures the status of a raft node.
@@ -541,13 +539,13 @@ func (r *raft) timeForHearbeat() bool {
 }
 
 // p69 of the raft thesis mentions that check quorum is performed when an
-// election timeout elapses
+// election timeout elapses.
 func (r *raft) timeForCheckQuorum() bool {
 	return r.electionTick >= r.electionTimeout
 }
 
 // p29 of the raft thesis mentions that leadership transfer should abort
-// when an election timeout elapses
+// when an election timeout elapses.
 func (r *raft) timeToAbortLeaderTransfer() bool {
 	return r.leaderTransfering() && r.electionTick >= r.electionTimeout
 }
@@ -1069,7 +1067,7 @@ func (r *raft) preLeaderPromotionHandleConfigChange() {
 
 // see section 5.3 of the raft paper
 // "When a leader first comes to power, it initializes all nextIndex values to
-// the index just after the last one in its log"
+// the index just after the last one in its log".
 func (r *raft) resetRemotes() {
 	for id := range r.remotes {
 		r.remotes[id] = &remote{
@@ -1756,7 +1754,7 @@ func (r *raft) handleLeaderHeartbeat(m pb.Message) error {
 	return nil
 }
 
-// p69 of the raft thesis
+// p69 of the raft thesis.
 func (r *raft) handleLeaderCheckQuorum(m pb.Message) error {
 	r.mustBeLeader()
 	if !r.leaderHasQuorum() {
@@ -1790,7 +1788,7 @@ func (r *raft) handleLeaderPropose(m pb.Message) error {
 	return nil
 }
 
-// p72 of the raft thesis
+// p72 of the raft thesis.
 func (r *raft) hasCommittedEntryAtCurrentTerm() bool {
 	if r.term == 0 {
 		panic("not suppose to reach here")
@@ -1814,7 +1812,7 @@ func (r *raft) addReadyToRead(index uint64, ctx pb.SystemCtx) {
 		})
 }
 
-// section 6.4 of the raft thesis
+// section 6.4 of the raft thesis.
 func (r *raft) handleLeaderReadIndex(m pb.Message) error {
 	r.mustBeLeader()
 	ctx := pb.SystemCtx{
@@ -2196,7 +2194,7 @@ func (r *raft) handleCandidateReadIndex(m pb.Message) error {
 // handleCandidateInstallSnapshot
 // handleCandidateHeartbeat
 // is called, it implies that m.Term == r.term and there is a leader
-// for that term. see 4th paragraph section 5.2 of the raft paper
+// for that term. see 4th paragraph section 5.2 of the raft paper.
 func (r *raft) handleCandidateReplicate(m pb.Message) error {
 	r.becomeFollower(r.term, m.From)
 	return r.handleReplicateMessage(m)

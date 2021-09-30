@@ -19,11 +19,10 @@ import (
 	"sync"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/syncutil"
-
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/syncutil"
 )
 
 var (
@@ -38,7 +37,7 @@ type acceptChanConn struct {
 	acc chan struct{}
 }
 
-// the terms send/receive are all from user's pow in this file
+// the terms send/receive are all from user's pow in this file.
 type chanConn struct {
 	snapshot     bool
 	senderClosed chan struct{}
@@ -46,8 +45,10 @@ type chanConn struct {
 	dataChan     chan []byte
 }
 
-var listening = make(map[string]acceptChanConn)
-var listeningMu sync.Mutex
+var (
+	listening   = make(map[string]acceptChanConn)
+	listeningMu sync.Mutex
+)
 
 // ChanTransportFactory is a channel based module used for testing purposes.
 type ChanTransportFactory struct{}

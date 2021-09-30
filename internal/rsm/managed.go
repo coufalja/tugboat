@@ -19,16 +19,13 @@ import (
 	"sync"
 
 	"github.com/cockroachdb/errors"
-
 	"github.com/coufalja/tugboat/config"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
 )
 
-var (
-	// ErrClusterClosed indicates that the cluster has been closed
-	ErrClusterClosed = errors.New("raft cluster already closed")
-)
+// ErrClusterClosed indicates that the cluster has been closed.
+var ErrClusterClosed = errors.New("raft cluster already closed")
 
 // IStreamable is the interface for types that can be snapshot streamed.
 type IStreamable interface {
@@ -104,10 +101,12 @@ type NativeSM struct {
 	mu     sync.RWMutex
 }
 
-var _ IManagedStateMachine = (*NativeSM)(nil)
-var _ ISavable = (*NativeSM)(nil)
-var _ IStreamable = (*NativeSM)(nil)
-var _ IRecoverable = (*NativeSM)(nil)
+var (
+	_ IManagedStateMachine = (*NativeSM)(nil)
+	_ ISavable             = (*NativeSM)(nil)
+	_ IStreamable          = (*NativeSM)(nil)
+	_ IRecoverable         = (*NativeSM)(nil)
+)
 
 // NewNativeSM creates and returns a new NativeSM object.
 func NewNativeSM(config config.Config, ism IStateMachine,

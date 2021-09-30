@@ -25,15 +25,15 @@ import (
 type LogLevel int
 
 const (
-	// CRITICAL is the CRITICAL log level
+	// CRITICAL is the CRITICAL log level.
 	CRITICAL LogLevel = iota - 1
-	// ERROR is the ERROR log level
+	// ERROR is the ERROR log level.
 	ERROR
-	// WARNING is the WARNING log level
+	// WARNING is the WARNING log level.
 	WARNING
-	// INFO is the INFO log level
+	// INFO is the INFO log level.
 	INFO
-	// DEBUG is the DEBUG log level
+	// DEBUG is the DEBUG log level.
 	DEBUG
 )
 

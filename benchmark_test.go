@@ -21,10 +21,6 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/coufalja/tugboat/transport"
-	"github.com/golang/snappy"
-	"github.com/lni/goutils/random"
-
 	"github.com/coufalja/tugboat/client"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/logdb"
@@ -36,6 +32,9 @@ import (
 	"github.com/coufalja/tugboat/logger"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
+	"github.com/coufalja/tugboat/transport"
+	"github.com/golang/snappy"
+	"github.com/lni/goutils/random"
 )
 
 func benchmarkAllocs(b *testing.B, sz uint64) {

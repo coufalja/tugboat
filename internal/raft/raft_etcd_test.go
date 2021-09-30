@@ -39,9 +39,7 @@ import (
 	pb "github.com/coufalja/tugboat/raftpb"
 )
 
-var (
-	testRateLimit = uint64(1024 * 128)
-)
+var testRateLimit = uint64(1024 * 128)
 
 func (r *raft) testOnlyHasConfigChangeToApply() bool {
 	entries, err := r.log.getEntriesToApply(noLimit)
@@ -96,7 +94,7 @@ func ltoa(l *entryLog) string {
 	return s
 }
 
-// nextEnts returns the appliable entries and updates the applied index
+// nextEnts returns the appliable entries and updates the applied index.
 func nextEnts(r *raft, s ILogDB) (ents []pb.Entry) {
 	// Transfer all unstable entries to "stable" storage.
 	if err := s.Append(r.log.entriesToSave()); err != nil {
@@ -182,7 +180,7 @@ func TestLeaderTransferToUpToDateNodeFromFollower(t *testing.T) {
 }
 
 // TestLeaderTransferWithCheckQuorum ensures transferring leader still works
-// even the current leader is still under its leader lease
+// even the current leader is still under its leader lease.
 func TestLeaderTransferWithCheckQuorum(t *testing.T) {
 	nt := newNetwork(nil, nil, nil)
 	for i := uint64(1); i < 4; i++ {
@@ -190,7 +188,7 @@ func TestLeaderTransferWithCheckQuorum(t *testing.T) {
 		r.checkQuorum = true
 		setRandomizedElectionTimeout(r, r.electionTimeout+i)
 	}
-	// Letting peer 2 electionElapsed reach to timeout so that it can vote for peer 1
+	// Letting peer 2 electionElapsed reach to timeout so that it can vote for peer 1.
 	f := nt.peers[2].(*raft)
 	for i := uint64(0); i < f.electionTimeout; i++ {
 		ne(f.tick(), t)
@@ -222,7 +220,7 @@ func TestLeaderTransferToSlowFollower(t *testing.T) {
 	// Transfer leadership to 3 when node 3 is lack of log.
 	// this will not actually transfer the leadership. on receiving the
 	// MsgLeaderTransfer, dragonboat's raft implementation won't force a MsgAppend msg
-	// to be sent
+	// to be sent.
 	nt.send(pb.Message{From: 3, To: 1, Hint: 3, Type: pb.LeaderTransfer})
 	if lead.state != leader || lead.leaderID != 1 {
 		t.Errorf("leadership transferred to unexpected node")
@@ -443,17 +441,14 @@ func testLeaderElection(t *testing.T) {
 		state   State
 		expTerm uint64
 	}{
-		{newNetworkWithConfig(cfg, nil, nil, nil), leader, 1},
-		{newNetworkWithConfig(cfg, nil, nil, nopStepper), leader, 1},
-		{newNetworkWithConfig(cfg, nil, nopStepper, nopStepper), candidate, 1},
-		{newNetworkWithConfig(cfg, nil, nopStepper, nopStepper, nil), candidate, 1},
-		{newNetworkWithConfig(cfg, nil, nopStepper, nopStepper, nil, nil), leader, 1},
-
+		{network: newNetworkWithConfig(cfg, nil, nil, nil), state: leader, expTerm: 1},
+		{network: newNetworkWithConfig(cfg, nil, nil, nopStepper), state: leader, expTerm: 1},
+		{network: newNetworkWithConfig(cfg, nil, nopStepper, nopStepper), state: candidate, expTerm: 1},
+		{network: newNetworkWithConfig(cfg, nil, nopStepper, nopStepper, nil), state: candidate, expTerm: 1},
+		{network: newNetworkWithConfig(cfg, nil, nopStepper, nopStepper, nil, nil), state: leader, expTerm: 1},
 		// three logs further along than 0, but in the same term so rejections
 		// are returned instead of the votes being ignored.
-		{newNetworkWithConfig(cfg,
-			nil, entsWithConfig(cfg, 1), entsWithConfig(cfg, 1), entsWithConfig(cfg, 1, 1), nil),
-			follower, 1},
+		{network: newNetworkWithConfig(cfg, nil, entsWithConfig(cfg, 1), entsWithConfig(cfg, 1), entsWithConfig(cfg, 1, 1), nil), state: follower, expTerm: 1},
 	}
 
 	for i, tt := range tests {
@@ -480,7 +475,7 @@ func TestLeaderCycle(t *testing.T) {
 // testLeaderCycle verifies that each node in a cluster can campaign
 // and be elected in turn. This ensures that elections (including
 // pre-vote) work when not starting from a clean slate (as they do in
-// TestLeaderElection)
+// TestLeaderElection).
 func testLeaderCycle(t *testing.T) {
 	var cfg func(config.Config)
 	n := newNetworkWithConfig(cfg, nil, nil, nil)
@@ -992,7 +987,8 @@ func TestOldMessages(t *testing.T) {
 		logdb: &TestLogDB{
 			entries: []pb.Entry{
 				{Cmd: nil, Term: 1, Index: 1},
-				{Cmd: nil, Term: 2, Index: 2}, {Cmd: nil, Term: 3, Index: 3},
+				{Cmd: nil, Term: 2, Index: 2},
+				{Cmd: nil, Term: 3, Index: 3},
 				{Cmd: []byte("somedata"), Term: 3, Index: 4},
 			},
 		},
@@ -1057,7 +1053,8 @@ func TestProposal(t *testing.T) {
 					entries: []pb.Entry{{Cmd: nil, Term: 1, Index: 1}, {Term: 1, Index: 2, Cmd: data}},
 				},
 				inmem:     inMemory{markerIndex: 3},
-				committed: 2}
+				committed: 2,
+			}
 		}
 		base := ltoa(wantLog)
 		for i, p := range tt.peers {
@@ -1096,7 +1093,8 @@ func TestProposalByProxy(t *testing.T) {
 				entries: []pb.Entry{{Cmd: nil, Term: 1, Index: 1}, {Term: 1, Cmd: data, Index: 2}},
 			},
 			inmem:     inMemory{markerIndex: 3},
-			committed: 2}
+			committed: 2,
+		}
 		base := ltoa(wantLog)
 		for i, p := range tt.peers {
 			if sm, ok := p.(*raft); ok {
@@ -1472,7 +1470,7 @@ func testRecvMsgVote(t *testing.T, msgType pb.MessageType) {
 		{follower, 3, 2, 1, true},
 
 		{leader, 3, 3, 1, true},
-		//{statePreCandidate, 3, 3, 1, true},
+		// {statePreCandidate, 3, 3, 1, true},
 		{candidate, 3, 3, 1, true},
 	}
 
@@ -1507,22 +1505,22 @@ func TestStateTransition(t *testing.T) {
 		wlead  uint64
 	}{
 		{follower, follower, true, 1, NoLeader},
-		//{follower, statePreCandidate, true, 0, NoLeader},
+		// {follower, statePreCandidate, true, 0, NoLeader},
 		{follower, candidate, true, 1, NoLeader},
 		{follower, leader, false, 0, NoLeader},
 
-		//{statePreCandidate, follower, true, 0, NoLeader},
-		//{statePreCandidate, statePreCandidate, true, 0, NoLeader},
-		//{statePreCandidate, candidate, true, 1, NoLeader},
-		//{statePreCandidate, leader, true, 0, 1},
+		// {statePreCandidate, follower, true, 0, NoLeader},
+		// {statePreCandidate, statePreCandidate, true, 0, NoLeader},
+		// {statePreCandidate, candidate, true, 1, NoLeader},
+		// {statePreCandidate, leader, true, 0, 1},
 
 		{candidate, follower, true, 0, NoLeader},
-		//{candidate, statePreCandidate, true, 0, NoLeader},
+		// {candidate, statePreCandidate, true, 0, NoLeader},
 		{candidate, candidate, true, 1, NoLeader},
 		{candidate, leader, true, 0, 1},
 
 		{leader, follower, true, 1, NoLeader},
-		//{leader, statePreCandidate, false, 0, NoLeader},
+		// {leader, statePreCandidate, false, 0, NoLeader},
 		{leader, candidate, false, 1, NoLeader},
 		{leader, leader, true, 0, 1},
 	}
@@ -1571,7 +1569,7 @@ func TestAllServerStepdown(t *testing.T) {
 		windex uint64
 	}{
 		{follower, follower, 3, 0},
-		//{statePreCandidate, follower, 3, 0},
+		// {statePreCandidate, follower, 3, 0},
 		{candidate, follower, 3, 0},
 		{leader, follower, 3, 1},
 	}
@@ -1694,8 +1692,6 @@ func TestLeaderSupersedingWithCheckQuorum(t *testing.T) {
 	}
 }
 
-// lni
-// check this three tests
 func TestLeaderElectionWithCheckQuorum(t *testing.T) {
 	a := newTestRaft(1, []uint64{1, 2, 3}, 10, 1, NewTestLogDB())
 	b := newTestRaft(2, []uint64{1, 2, 3}, 10, 1, NewTestLogDB())
@@ -1754,7 +1750,7 @@ func TestFreeStuckCandidateWithCheckQuorumAndPreVote(t *testing.T) {
 
 // TestFreeStuckCandidateWithCheckQuorum ensures that a candidate with a higher term
 // can disrupt the leader even if the leader still "officially" holds the lease, The
-// leader is expected to step down and adopt the candidate's term
+// leader is expected to step down and adopt the candidate's term.
 func testFreeStuckCandidateWithCheckQuorum(t *testing.T) {
 	a := newTestRaft(1, []uint64{1, 2, 3}, 10, 1, NewTestLogDB())
 	b := newTestRaft(2, []uint64{1, 2, 3}, 10, 1, NewTestLogDB())
@@ -2024,15 +2020,15 @@ func TestBcastBeat(t *testing.T) {
 	}
 }
 
-// tests the output of the state machine when receiving MsgLeaderHeartbeat
+// tests the output of the state machine when receiving MsgLeaderHeartbeat.
 func TestRecvMsgLeaderHeartbeat(t *testing.T) {
 	tests := []struct {
 		state State
 		wMsg  int
 	}{
-		// leader should send MsgHeartbeat
+		// leader should send MsgHeartbeat.
 		{leader, 2},
-		// candidate and follower should ignore MsgLeaderHeartbeat
+		// candidate and follower should ignore MsgLeaderHeartbeat.
 		{candidate, 0},
 		{follower, 0},
 	}
@@ -2065,10 +2061,10 @@ func TestLeaderIncreaseNext(t *testing.T) {
 
 		wnext uint64
 	}{
-		// state replicate, optimistically increase next
+		// state replicate, optimistically increase next.
 		// previous entries + noop entry + propose + 1
 		{remoteReplicate, 2, uint64(len(previousEnts) + 1 + 1 + 1)},
-		// state probe, not optimistically increase next
+		// state probe, not optimistically increase next.
 		{remoteRetry, 2, 2},
 	}
 
@@ -2123,7 +2119,7 @@ func TestSendAppendForRemoteRetry(t *testing.T) {
 			}
 		}
 
-		// do a heartbeat
+		// do a heartbeat.
 		for j := uint64(0); j < r.heartbeatTimeout; j++ {
 			ne(r.Handle(pb.Message{From: 1, To: 1, Type: pb.LeaderHeartbeat}), t)
 		}
@@ -2131,7 +2127,7 @@ func TestSendAppendForRemoteRetry(t *testing.T) {
 			t.Errorf("paused = %v, want remoteWait", r.remotes[2].state)
 		}
 
-		// consume the heartbeat
+		// consume the heartbeat.
 		msg := r.readMessages()
 		if len(msg) != 1 {
 			t.Errorf("len(msg) = %d, want %d", len(msg), 1)
@@ -2141,7 +2137,7 @@ func TestSendAppendForRemoteRetry(t *testing.T) {
 		}
 	}
 
-	// a heartbeat response will allow another message to be sent
+	// a heartbeat response will allow another message to be sent.
 	ne(r.Handle(pb.Message{From: 2, To: 1, Type: pb.HeartbeatResp}), t)
 	msg := r.readMessages()
 	if len(msg) != 1 {
@@ -2155,7 +2151,7 @@ func TestSendAppendForRemoteRetry(t *testing.T) {
 	}
 }
 
-// optimisitically send entries out
+// optimisitically send entries out.
 func TestSendAppendForRemoteReplicate(t *testing.T) {
 	r := newTestRaft(1, []uint64{1, 2}, 10, 1, NewTestLogDB())
 	r.becomeCandidate()
@@ -2173,7 +2169,7 @@ func TestSendAppendForRemoteReplicate(t *testing.T) {
 	}
 }
 
-// paused, no msgapp when entries are locally appended
+// paused, no msgapp when entries are locally appended.
 func TestSendAppendForRemoteSnapshot(t *testing.T) {
 	r := newTestRaft(1, []uint64{1, 2}, 10, 1, NewTestLogDB())
 	r.becomeCandidate()
@@ -2700,13 +2696,11 @@ func TestCommitAfterRemoveNode(t *testing.T) {
 	}
 }
 
-var (
-	testingSnap = pb.Snapshot{
-		Index:      11, // magic number
-		Term:       11, // magic number
-		Membership: getTestMembership([]uint64{1, 2}),
-	}
-)
+var testingSnap = pb.Snapshot{
+	Index:      11, // magic number
+	Term:       11, // magic number
+	Membership: getTestMembership([]uint64{1, 2}),
+}
 
 func TestSendingSnapshotSetPendingSnapshot(t *testing.T) {
 	storage := NewTestLogDB()
@@ -3014,7 +3008,7 @@ func idsBySize(size int) []uint64 {
 
 // setRandomizedElectionTimeout set up the value by caller instead of choosing
 // by system, in some test scenario we need to fill in some expected value to
-// ensure the certainty
+// ensure the certainty.
 func setRandomizedElectionTimeout(r *raft, v uint64) {
 	r.randomizedElectionTimeout = v
 }

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /*
-Package dragonboat is a feature complete and highly optimized multi-group Raft
+Package tugboat is a feature complete and highly optimized multi-group Raft
 implementation for providing consensus in distributed systems.
 
 The NodeHost struct is the facade interface for all features provided by the
@@ -53,7 +53,7 @@ its deadline, it faces the risk of having the same proposal committed and
 applied twice into the user state machine. Dragonboat prevents this by
 implementing the client session concept described in Diego Ongaro's PhD thesis.
 */
-package tugboat // github.com/coufalja/tugboat
+package tugboat
 
 import (
 	"context"
@@ -65,10 +65,6 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/coufalja/tugboat/transport"
-	"github.com/lni/goutils/logutil"
-	"github.com/lni/goutils/syncutil"
-
 	"github.com/coufalja/tugboat/client"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/id"
@@ -81,16 +77,19 @@ import (
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
+	"github.com/coufalja/tugboat/transport"
+	"github.com/lni/goutils/logutil"
+	"github.com/lni/goutils/syncutil"
 )
 
 const (
-	// DragonboatMajor is the major version number
+	// DragonboatMajor is the major version number.
 	DragonboatMajor = 3
-	// DragonboatMinor is the minor version number
+	// DragonboatMinor is the minor version number.
 	DragonboatMinor = 4
-	// DragonboatPatch is the patch version number
+	// DragonboatPatch is the patch version number.
 	DragonboatPatch = 0
-	// DEVVersion is a boolean flag indicating whether this is a dev version
+	// DEVVersion is a boolean flag indicating whether this is a dev version.
 	DEVVersion = true
 )
 
@@ -396,7 +395,7 @@ func (nh *NodeHost) Close() {
 // Stop closes and releases all resources owned by the NodeHost instance
 // including Raft nodes managed by the NodeHost.
 //
-// Deprecated: Use Close instead
+// Deprecated: Use Close instead.
 func (nh *NodeHost) Stop() {
 	nh.Close()
 }

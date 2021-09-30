@@ -20,10 +20,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/lni/goutils/logutil"
-
 	"github.com/coufalja/tugboat/internal/fileutil"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/logutil"
 )
 
 func addressEqual(addr1 string, addr2 string) bool {
@@ -196,6 +195,7 @@ func (m *membership) isAddNodeAsNonVoting(cc pb.ConfigChange) bool {
 	}
 	return false
 }
+
 func (m *membership) isAddNodeAsWitness(cc pb.ConfigChange) bool {
 	if cc.Type == pb.AddWitness {
 		_, ok := m.members.Addresses[cc.NodeID]

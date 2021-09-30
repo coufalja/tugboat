@@ -37,11 +37,10 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/lni/goutils/logutil"
-
 	"github.com/coufalja/tugboat/internal/raft"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/logutil"
 )
 
 const (

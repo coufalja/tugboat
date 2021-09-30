@@ -207,67 +207,64 @@ func TestRLLTLogMaybeAppend(t *testing.T) {
 	}{
 		// not match: term is different
 		{
-			lastterm - 1, lastindex, lastindex, []pb.Entry{{Index: lastindex + 1, Term: 4}},
-			0, false, commit, false,
+			logTerm: lastterm - 1, index: lastindex, committed: lastindex, ents: []pb.Entry{{Index: lastindex + 1, Term: 4}}, wcommit: commit,
 		},
 		// not match: index out of bound
 		{
-			lastterm, lastindex + 1, lastindex, []pb.Entry{{Index: lastindex + 2, Term: 4}},
-			0, false, commit, false,
+			logTerm: lastterm, index: lastindex + 1, committed: lastindex, ents: []pb.Entry{{Index: lastindex + 2, Term: 4}}, wcommit: commit,
 		},
 		// match with the last existing entry
 		{
-			lastterm, lastindex, lastindex, nil,
-			lastindex, true, lastindex, false,
+			logTerm: lastterm, index: lastindex, committed: lastindex,
+			wlasti: lastindex, wappend: true, wcommit: lastindex,
 		},
 		{
-			lastterm, lastindex, lastindex + 1, nil,
-			lastindex, true, lastindex, false, // do not increase commit higher than lastnewi
+			logTerm: lastterm, index: lastindex, committed: lastindex + 1,
+			wlasti: lastindex, wappend: true, wcommit: lastindex, // do not increase commit higher than lastnewi
 		},
 		{
-			lastterm, lastindex, lastindex - 1, nil,
-			lastindex, true, lastindex - 1, false, // commit up to the commit in the message
+			logTerm: lastterm, index: lastindex, committed: lastindex - 1,
+			wlasti: lastindex, wappend: true, wcommit: lastindex - 1, // commit up to the commit in the message
 		},
 		{
-			lastterm, lastindex, 0, nil,
-			lastindex, true, commit, false, // commit do not decrease
+			logTerm: lastterm, index: lastindex,
+			wlasti: lastindex, wappend: true, wcommit: commit, // commit do not decrease
 		},
 		{
-			0, 0, lastindex, nil,
-			0, true, commit, false, // commit do not decrease
+			committed: lastindex, wappend: true, wcommit: commit, // commit do not decrease
 		},
 		{
-			lastterm, lastindex, lastindex, []pb.Entry{{Index: lastindex + 1, Term: 4}},
-			lastindex + 1, true, lastindex, false,
+			logTerm: lastterm, index: lastindex, committed: lastindex, ents: []pb.Entry{{Index: lastindex + 1, Term: 4}},
+			wlasti: lastindex + 1, wappend: true, wcommit: lastindex,
 		},
 		{
-			lastterm, lastindex, lastindex + 1, []pb.Entry{{Index: lastindex + 1, Term: 4}},
-			lastindex + 1, true, lastindex + 1, false,
+			logTerm: lastterm, index: lastindex, committed: lastindex + 1, ents: []pb.Entry{{Index: lastindex + 1, Term: 4}},
+			wlasti: lastindex + 1, wappend: true, wcommit: lastindex + 1,
 		},
 		{
-			lastterm, lastindex, lastindex + 2, []pb.Entry{{Index: lastindex + 1, Term: 4}},
-			lastindex + 1, true, lastindex + 1, false, // do not increase commit higher than lastnewi
+			logTerm: lastterm, index: lastindex, committed: lastindex + 2, ents: []pb.Entry{{Index: lastindex + 1, Term: 4}},
+			wlasti: lastindex + 1, wappend: true, wcommit: lastindex + 1, // do not increase commit higher than lastnewi
 		},
 		{
-			lastterm, lastindex, lastindex + 2, []pb.Entry{{Index: lastindex + 1, Term: 4}, {Index: lastindex + 2, Term: 4}},
-			lastindex + 2, true, lastindex + 2, false,
+			logTerm: lastterm, index: lastindex, committed: lastindex + 2, ents: []pb.Entry{{Index: lastindex + 1, Term: 4}, {Index: lastindex + 2, Term: 4}},
+			wlasti: lastindex + 2, wappend: true, wcommit: lastindex + 2,
 		},
 		// match with the the entry in the middle
 		{
-			lastterm - 1, lastindex - 1, lastindex, []pb.Entry{{Index: lastindex, Term: 4}},
-			lastindex, true, lastindex, false,
+			logTerm: lastterm - 1, index: lastindex - 1, committed: lastindex, ents: []pb.Entry{{Index: lastindex, Term: 4}},
+			wlasti: lastindex, wappend: true, wcommit: lastindex,
 		},
 		{
-			lastterm - 2, lastindex - 2, lastindex, []pb.Entry{{Index: lastindex - 1, Term: 4}},
-			lastindex - 1, true, lastindex - 1, false,
+			logTerm: lastterm - 2, index: lastindex - 2, committed: lastindex, ents: []pb.Entry{{Index: lastindex - 1, Term: 4}},
+			wlasti: lastindex - 1, wappend: true, wcommit: lastindex - 1,
 		},
 		{
-			lastterm - 3, lastindex - 3, lastindex, []pb.Entry{{Index: lastindex - 2, Term: 4}},
-			lastindex - 2, true, lastindex - 2, true, // conflict with existing committed entry
+			logTerm: lastterm - 3, index: lastindex - 3, committed: lastindex, ents: []pb.Entry{{Index: lastindex - 2, Term: 4}},
+			wlasti: lastindex - 2, wappend: true, wcommit: lastindex - 2, wpanic: true, // conflict with existing committed entry
 		},
 		{
-			lastterm - 2, lastindex - 2, lastindex, []pb.Entry{{Index: lastindex - 1, Term: 4}, {Index: lastindex, Term: 4}},
-			lastindex, true, lastindex, false,
+			logTerm: lastterm - 2, index: lastindex - 2, committed: lastindex, ents: []pb.Entry{{Index: lastindex - 1, Term: 4}, {Index: lastindex, Term: 4}},
+			wlasti: lastindex, wappend: true, wcommit: lastindex,
 		},
 	}
 
@@ -474,7 +471,7 @@ func TestRLLTNextEnts(t *testing.T) {
 	}
 }
 
-//TestCompaction ensures that the number of log entries is correct after compactions.
+// TestCompaction ensures that the number of log entries is correct after compactions.
 func TestRLLTCompaction(t *testing.T) {
 	tests := []struct {
 		lastIndex uint64

@@ -22,7 +22,6 @@ import (
 
 	"github.com/cockroachdb/errors/oserror"
 	pvfs "github.com/cockroachdb/pebble/vfs"
-
 	gvfs "github.com/lni/vfs"
 )
 

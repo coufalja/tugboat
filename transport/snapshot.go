@@ -37,7 +37,6 @@ import (
 	"sync/atomic"
 
 	"github.com/cockroachdb/errors"
-
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"

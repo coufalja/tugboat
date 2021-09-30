@@ -21,8 +21,6 @@ import (
 	"testing"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/leaktest"
-
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/logdb"
@@ -30,6 +28,7 @@ import (
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/leaktest"
 )
 
 const (

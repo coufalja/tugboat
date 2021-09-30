@@ -20,11 +20,10 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/lni/goutils/stringutil"
-
 	"github.com/coufalja/tugboat/client"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
+	"github.com/lni/goutils/stringutil"
 )
 
 var (

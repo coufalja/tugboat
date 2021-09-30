@@ -28,19 +28,20 @@ import (
 // |Version|CompressionFlag|SessionFlag|
 // | 4Bits |     3Bits     |   1Bit    |
 // -------------------------------------
+
 const (
 	EEHeaderSize uint8 = 1
 	EEVersion    uint8 = 0 << 4
 	EEV0         uint8 = 0 << 4
 
 	// for V0 format, entries with empty payload will cause panic as such
-	// entries always have their TYPE value set to ApplicationEntry
+	// entries always have their TYPE value set to ApplicationEntry.
 	EENoCompression uint8 = 0 << 1
 	EESnappy        uint8 = 1 << 1
 
 	EENoSession  uint8 = 0
 	EEHasSession uint8 = 1
-	// uncompressed size is binary.Uvarint encoded
+	// uncompressed size is binary.Uvarint encoded.
 	EEV0SizeOffset int = 1
 )
 
@@ -76,10 +77,10 @@ func GetEncoded(ct dio.CompressionType, cmd []byte, dst []byte) []byte {
 	return getEncoded(ct, cmd, dst)
 }
 
-// get v0 encoded payload
+// get v0 encoded payload.
 func getEncoded(ct dio.CompressionType, cmd []byte, dst []byte) []byte {
 	if ct == dio.NoCompression {
-		// output is 1 byte header, len(cmd) bytes of payload
+		// output is 1 byte header, len(cmd) bytes of payload.
 		if len(dst) < len(cmd)+1 {
 			dst = make([]byte, len(cmd)+1)
 		}
@@ -91,7 +92,7 @@ func getEncoded(ct dio.CompressionType, cmd []byte, dst []byte) []byte {
 		if !ok {
 			panic("invalid payload length")
 		}
-		// 1 byte header
+		// 1 byte header.
 		maxSize = maxSize + 1
 		if uint64(len(dst)) < maxSize {
 			dst = make([]byte, maxSize)

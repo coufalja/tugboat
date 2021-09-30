@@ -21,9 +21,8 @@ import (
 	"io"
 	"sync"
 
-	"github.com/lni/goutils/cache"
-
 	"github.com/coufalja/tugboat/internal/fileutil"
+	"github.com/lni/goutils/cache"
 )
 
 const (

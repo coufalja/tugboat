@@ -18,7 +18,6 @@ import (
 	"io"
 
 	"github.com/cockroachdb/errors"
-
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
 )

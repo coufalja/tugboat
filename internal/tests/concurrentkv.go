@@ -199,7 +199,7 @@ func (s *ConcurrentKVTest) RecoverFromSnapshot(r io.Reader,
 	return nil
 }
 
-// Close closes the IStateMachine instance
+// Close closes the IStateMachine instance.
 func (s *ConcurrentKVTest) Close() error {
 	atomic.StoreUint32(&s.closed, 1)
 	return nil

@@ -21,8 +21,6 @@ import (
 	"testing"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/leaktest"
-
 	"github.com/coufalja/tugboat/client"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/raft"
@@ -33,6 +31,7 @@ import (
 	"github.com/coufalja/tugboat/internal/vfs"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
+	"github.com/lni/goutils/leaktest"
 )
 
 const (
@@ -1994,7 +1993,6 @@ func TestRecoverSMRequired(t *testing.T) {
 						t.Fatalf("%d, not panic", idx)
 					}
 				}
-
 			}()
 			if res := sm.recoverRequired(ss, tt.init); res != tt.required {
 				t.Errorf("%d, result %t, want %t", idx, res, tt.required)
@@ -2163,25 +2161,37 @@ func (t *testManagedStateMachine) Sync() error {
 	return nil
 }
 func (t *testManagedStateMachine) GetHash() (uint64, error) { return 0, nil }
+
 func (t *testManagedStateMachine) Prepare() (interface{}, error) {
 	t.prepareInvoked = true
 	return nil, nil
 }
+
 func (t *testManagedStateMachine) Save(SSMeta,
 	io.Writer, []byte, sm.ISnapshotFileCollection) (bool, error) {
 	return false, nil
 }
+
 func (t *testManagedStateMachine) Recover(io.Reader, []sm.SnapshotFile) error {
 	return nil
 }
+
 func (t *testManagedStateMachine) Stream(interface{}, io.Writer) error { return nil }
-func (t *testManagedStateMachine) Offloaded() bool                     { return false }
-func (t *testManagedStateMachine) Loaded()                             {}
-func (t *testManagedStateMachine) Close() error                        { return nil }
-func (t *testManagedStateMachine) DestroyedC() <-chan struct{}         { return nil }
-func (t *testManagedStateMachine) Concurrent() bool                    { return t.concurrent }
-func (t *testManagedStateMachine) OnDisk() bool                        { return t.onDisk }
-func (t *testManagedStateMachine) Type() pb.StateMachineType           { return t.smType }
+
+func (t *testManagedStateMachine) Offloaded() bool { return false }
+
+func (t *testManagedStateMachine) Loaded() {}
+
+func (t *testManagedStateMachine) Close() error { return nil }
+
+func (t *testManagedStateMachine) DestroyedC() <-chan struct{} { return nil }
+
+func (t *testManagedStateMachine) Concurrent() bool { return t.concurrent }
+
+func (t *testManagedStateMachine) OnDisk() bool { return t.onDisk }
+
+func (t *testManagedStateMachine) Type() pb.StateMachineType { return t.smType }
+
 func (t *testManagedStateMachine) BatchedUpdate(ents []sm.Entry) ([]sm.Entry, error) {
 	if !t.corruptIndex {
 		t.first = ents[0].Index
@@ -2599,15 +2609,19 @@ type errorUpdateSM struct{}
 func (e *errorUpdateSM) Update(data []byte) (sm.Result, error) {
 	return sm.Result{}, errReturnedError
 }
+
 func (e *errorUpdateSM) Lookup(q interface{}) (interface{}, error) { return nil, nil }
+
 func (e *errorUpdateSM) SaveSnapshot(io.Writer,
 	sm.ISnapshotFileCollection, <-chan struct{}) error {
 	return errReturnedError
 }
+
 func (e *errorUpdateSM) RecoverFromSnapshot(io.Reader,
 	[]sm.SnapshotFile, <-chan struct{}) error {
 	return errReturnedError
 }
+
 func (e *errorUpdateSM) Close() error { return nil }
 
 func TestUpdateErrorIsReturned(t *testing.T) {

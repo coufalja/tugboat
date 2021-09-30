@@ -19,14 +19,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lni/goutils/syncutil"
-
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
+	"github.com/lni/goutils/syncutil"
 )
 
 var (
@@ -106,12 +105,12 @@ func (l *loadedNodes) update(workerID uint64,
 	l.nodes[nt] = nodes
 }
 
-// nodes is a map of workerID -> *node
+// nodes is a map of workerID -> *node.
 func (l *loadedNodes) updateFromBusySSNodes(nodes map[uint64]*node) {
 	l.updateFromLoadedSSNodes(fromWorker, nodes)
 }
 
-// nodes is a map of clusterID -> *node
+// nodes is a map of clusterID -> *node.
 func (l *loadedNodes) updateFromLoadedSSNodes(from from,
 	nodes map[uint64]*node) {
 	l.mu.Lock()

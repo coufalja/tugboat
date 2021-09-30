@@ -21,8 +21,6 @@ import (
 	"strings"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/random"
-
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/id"
@@ -30,6 +28,7 @@ import (
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
 	"github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/random"
 )
 
 var (
@@ -130,7 +129,7 @@ func (env *Env) getSnapshotDirParts(did uint64,
 		env.fs.PathJoin(dir, env.hostname, dd), append(toBeCreated, pd, sd)
 }
 
-// GetLogDBDirs returns the directory names for LogDB
+// GetLogDBDirs returns the directory names for LogDB.
 func (env *Env) GetLogDBDirs(did uint64) (string, string) {
 	dir, lldir := env.getDataDirs()
 	didStr := env.getDeploymentIDSubDirName(did)

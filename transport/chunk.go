@@ -21,8 +21,6 @@ import (
 	"sync/atomic"
 
 	"github.com/cockroachdb/errors"
-	"github.com/lni/goutils/logutil"
-
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/server"
@@ -30,6 +28,7 @@ import (
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/lni/goutils/logutil"
 )
 
 var (
@@ -67,7 +66,7 @@ func (l *ssLock) unlock() {
 	l.mu.Unlock()
 }
 
-// Chunk managed on the receiving side
+// Chunk managed on the receiving side.
 type Chunk struct {
 	fs        vfs.IFS
 	tracked   map[string]*tracked

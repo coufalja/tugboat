@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/coufalja/tugboat/config"
-
 	"github.com/coufalja/tugboat/internal/server"
 	pb "github.com/coufalja/tugboat/raftpb"
 )
@@ -455,7 +454,7 @@ func TestNonVotingCanActAsRegularNodeAfterPromotion(t *testing.T) {
 // nonVotings will not be asked to vote, however a node used to be a non-voting node
 // may not realize its own promotion and thus can still receive RequestVote from
 // candidates that are aware of such promotion. in this case, nonVotings have to
-// cast their votes
+// cast their votes.
 func TestNonVotingCanVote(t *testing.T) {
 	testNonVotingCanVote(t, false)
 	testNonVotingCanVote(t, true)
@@ -2943,7 +2942,7 @@ func TestHandleLeaderHeartbeatResp(t *testing.T) {
 		t.Fatalf("failed to get remote")
 	}
 	rp.setNotActive()
-	//rp.pause()
+	// rp.pause()
 	ne(r.handleLeaderHeartbeatResp(msg, rp), t)
 	if !rp.isActive() {
 		t.Errorf("not active")

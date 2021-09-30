@@ -22,7 +22,6 @@ import (
 	"sync"
 
 	"github.com/cockroachdb/errors"
-
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/vfs"
 	pb "github.com/coufalja/tugboat/raftpb"

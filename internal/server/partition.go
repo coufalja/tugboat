@@ -14,9 +14,7 @@
 
 package server
 
-var (
-	defaultClusterIDMod uint64 = 512
-)
+var defaultClusterIDMod uint64 = 512
 
 // IPartitioner is the interface for partitioning clusters.
 type IPartitioner interface {

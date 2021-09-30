@@ -39,7 +39,7 @@ func (o *OffloadedStatus) Destroyed() bool {
 	}
 }
 
-// SetDestroyed set the destroyed flag to be true
+// SetDestroyed set the destroyed flag to be true.
 func (o *OffloadedStatus) SetDestroyed() {
 	o.destroyed = true
 	close(o.DestroyedC)
