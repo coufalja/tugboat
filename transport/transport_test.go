@@ -850,7 +850,7 @@ func TestMaxSnapshotConnectionIsLimited(t *testing.T) {
 	}()
 	defer stopper.Stop()
 	nodes.Add(100, 2, serverAddress)
-	conns := make([]*Sink, 0)
+	conns := make([]raftpb.IChunkSink, 0)
 	for i := uint64(0); i < maxConnectionCount; i++ {
 		sink := trans.GetStreamSink(100, 2)
 		if sink == nil {
@@ -864,7 +864,7 @@ func TestMaxSnapshotConnectionIsLimited(t *testing.T) {
 		}
 	}
 	for _, v := range conns {
-		close(v.j.ch)
+		close(v.(*Sink).j.ch)
 	}
 	for {
 		if atomic.LoadUint64(&trans.jobs) != 0 {

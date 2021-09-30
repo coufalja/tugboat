@@ -59,7 +59,7 @@ func (t *Transport) SendSnapshot(m pb.Message) bool {
 }
 
 // GetStreamSink returns a connection used for streaming snapshot.
-func (t *Transport) GetStreamSink(clusterID uint64, nodeID uint64) *Sink {
+func (t *Transport) GetStreamSink(clusterID uint64, nodeID uint64) pb.IChunkSink {
 	s := t.getStreamSink(clusterID, nodeID)
 	if s == nil {
 		plog.Errorf("failed to connect to %s", dn(clusterID, nodeID))

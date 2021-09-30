@@ -87,16 +87,6 @@ type IMessageHandler interface {
 	HandleSnapshot(clusterID uint64, nodeID uint64, from uint64)
 }
 
-// ITransport is the interface of the transport layer used for exchanging
-// Raft messages.
-type ITransport interface {
-	Name() string
-	Send(pb.Message) bool
-	SendSnapshot(pb.Message) bool
-	GetStreamSink(clusterID uint64, nodeID uint64) *Sink
-	Close() error
-}
-
 //
 // funcs used mainly in testing
 //
@@ -176,8 +166,6 @@ type Transport struct {
 	nhConfig     config.NodeHostConfig
 	jobs         uint64
 }
-
-var _ ITransport = (*Transport)(nil)
 
 // NewTransport creates a new Transport object.
 func NewTransport(nhConfig config.NodeHostConfig,

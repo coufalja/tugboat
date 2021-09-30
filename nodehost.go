@@ -219,6 +219,26 @@ var DefaultSnapshotOption SnapshotOption
 // NodeHostConfig.AddressByNodeHostID is set.
 type Target = string
 
+// ITransport is the interface of the transport layer used for exchanging
+// Raft messages.
+type ITransport interface {
+	Name() string
+	Send(pb.Message) bool
+	SendSnapshot(pb.Message) bool
+	GetStreamSink(clusterID uint64, nodeID uint64) pb.IChunkSink
+	Close() error
+}
+
+// INodeRegistry is the local registry interface used to keep all known
+// nodes in the system..
+type INodeRegistry interface {
+	Close() error
+	Add(clusterID uint64, nodeID uint64, url string)
+	Remove(clusterID uint64, nodeID uint64)
+	RemoveCluster(clusterID uint64)
+	Resolve(clusterID uint64, nodeID uint64) (string, string, error)
+}
+
 // NodeHost manages Raft clusters and enables them to share resources such as
 // transport and persistent storage etc. NodeHost is also the central thread
 // safe access point for accessing Dragonboat functionalities.
@@ -236,9 +256,9 @@ type NodeHost struct {
 		raft        raftio.IRaftEventListener
 		sys         *sysEventListener
 	}
-	nodes        transport.INodeRegistry
+	nodes        INodeRegistry
 	fs           vfs.IFS
-	transport    transport.ITransport
+	transport    ITransport
 	id           *id.NodeHostID
 	stopper      *syncutil.Stopper
 	msgHandler   *messageHandler

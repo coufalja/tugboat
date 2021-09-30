@@ -29,7 +29,6 @@ import (
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
-	"github.com/coufalja/tugboat/transport"
 	"github.com/lni/goutils/logutil"
 	"github.com/lni/goutils/syncutil"
 )
@@ -70,10 +69,10 @@ func (l *logDBMetrics) isBusy() bool {
 
 type node struct {
 	clusterInfo           atomic.Value
-	nodeRegistry          transport.INodeRegistry
+	nodeRegistry          INodeRegistry
 	logdb                 raftio.ILogDB
 	pipeline              pipeline
-	getStreamSink         func(uint64, uint64) *transport.Sink
+	getStreamSink         func(uint64, uint64) pb.IChunkSink
 	ss                    snapshotState
 	configChangeC         <-chan configChangeRequest
 	snapshotC             <-chan rsm.SSRequest
@@ -135,10 +134,10 @@ func newNode(peers map[uint64]string,
 	logReader *logdb.LogReader,
 	pipeline pipeline,
 	liQueue *leaderInfoQueue,
-	getStreamSink func(uint64, uint64) *transport.Sink,
+	getStreamSink func(uint64, uint64) pb.IChunkSink,
 	handleSnapshotStatus func(uint64, uint64, bool),
 	sendMessage func(pb.Message),
-	nodeRegistry transport.INodeRegistry,
+	nodeRegistry INodeRegistry,
 	pool *sync.Pool,
 	ldb raftio.ILogDB,
 	metrics *logDBMetrics,
