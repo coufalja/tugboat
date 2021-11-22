@@ -15,76 +15,28 @@
 package tugboat
 
 import (
-	"fmt"
-	"io"
 	"sync/atomic"
 
-	"github.com/VictoriaMetrics/metrics"
 	"github.com/coufalja/tugboat/raftio"
 	"github.com/coufalja/tugboat/server"
 )
 
-// WriteHealthMetrics writes all health metrics in Prometheus format to the
-// specified writer. This function is typically called by the metrics http
-// handler.
-func WriteHealthMetrics(w io.Writer) {
-	metrics.WritePrometheus(w, false)
-}
-
 type raftEventListener struct {
-	readIndexDropped    *metrics.Counter
-	proposalDropped     *metrics.Counter
-	replicationRejected *metrics.Counter
-	leaderID            *uint64
-	snapshotRejected    *metrics.Counter
-	queue               *leaderInfoQueue
-	hasLeader           *metrics.Gauge
-	term                *metrics.Gauge
-	campaignLaunched    *metrics.Counter
-	campaignSkipped     *metrics.Counter
-	termValue           uint64
-	nodeID              uint64
-	clusterID           uint64
-	metrics             bool
+	leaderID  *uint64
+	queue     *leaderInfoQueue
+	termValue uint64
+	nodeID    uint64
+	clusterID uint64
 }
 
 var _ server.IRaftEventListener = (*raftEventListener)(nil)
 
-func newRaftEventListener(clusterID uint64, nodeID uint64,
-	leaderID *uint64, useMetrics bool,
-	queue *leaderInfoQueue) *raftEventListener {
+func newRaftEventListener(clusterID uint64, nodeID uint64, leaderID *uint64, queue *leaderInfoQueue) *raftEventListener {
 	el := &raftEventListener{
 		clusterID: clusterID,
 		nodeID:    nodeID,
 		leaderID:  leaderID,
-		metrics:   useMetrics,
 		queue:     queue,
-	}
-	if useMetrics {
-		label := fmt.Sprintf(`{clusterid="%d",nodeid="%d"}`, clusterID, nodeID)
-		name := fmt.Sprintf(`dragonboat_raftnode_campaign_launched_total%s`, label)
-		el.campaignLaunched = metrics.GetOrCreateCounter(name)
-		name = fmt.Sprintf(`dragonboat_raftnode_campaign_skipped_total%s`, label)
-		el.campaignSkipped = metrics.GetOrCreateCounter(name)
-		name = fmt.Sprintf(`dragonboat_raftnode_snapshot_rejected_total%s`, label)
-		el.snapshotRejected = metrics.GetOrCreateCounter(name)
-		name = fmt.Sprintf(`dragonboat_raftnode_replication_rejected_total%s`, label)
-		el.replicationRejected = metrics.GetOrCreateCounter(name)
-		name = fmt.Sprintf(`dragonboat_raftnode_proposal_dropped_total%s`, label)
-		el.proposalDropped = metrics.GetOrCreateCounter(name)
-		name = fmt.Sprintf(`dragonboat_raftnode_read_index_dropped_total%s`, label)
-		el.readIndexDropped = metrics.GetOrCreateCounter(name)
-		name = fmt.Sprintf(`dragonboat_raftnode_has_leader%s`, label)
-		el.hasLeader = metrics.GetOrCreateGauge(name, func() float64 {
-			if atomic.LoadUint64(leaderID) == raftio.NoLeader {
-				return 0.0
-			}
-			return 1.0
-		})
-		name = fmt.Sprintf(`dragonboat_raftnode_term%s`, label)
-		el.term = metrics.GetOrCreateGauge(name, func() float64 {
-			return float64(atomic.LoadUint64(&el.termValue))
-		})
 	}
 	return el
 }
@@ -106,40 +58,22 @@ func (e *raftEventListener) LeaderUpdated(info server.LeaderInfo) {
 	}
 }
 
-func (e *raftEventListener) CampaignLaunched(info server.CampaignInfo) {
-	if e.metrics {
-		e.campaignLaunched.Add(1)
-	}
+func (e *raftEventListener) CampaignLaunched(server.CampaignInfo) {
 }
 
-func (e *raftEventListener) CampaignSkipped(info server.CampaignInfo) {
-	if e.metrics {
-		e.campaignSkipped.Add(1)
-	}
+func (e *raftEventListener) CampaignSkipped(server.CampaignInfo) {
 }
 
-func (e *raftEventListener) SnapshotRejected(info server.SnapshotInfo) {
-	if e.metrics {
-		e.snapshotRejected.Add(1)
-	}
+func (e *raftEventListener) SnapshotRejected(server.SnapshotInfo) {
 }
 
-func (e *raftEventListener) ReplicationRejected(info server.ReplicationInfo) {
-	if e.metrics {
-		e.replicationRejected.Add(1)
-	}
+func (e *raftEventListener) ReplicationRejected(server.ReplicationInfo) {
 }
 
-func (e *raftEventListener) ProposalDropped(info server.ProposalInfo) {
-	if e.metrics {
-		e.proposalDropped.Add(len(info.Entries))
-	}
+func (e *raftEventListener) ProposalDropped(server.ProposalInfo) {
 }
 
-func (e *raftEventListener) ReadIndexDropped(info server.ReadIndexInfo) {
-	if e.metrics {
-		e.readIndexDropped.Add(1)
-	}
+func (e *raftEventListener) ReadIndexDropped(server.ReadIndexInfo) {
 }
 
 type sysEventListener struct {

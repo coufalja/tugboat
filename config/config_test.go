@@ -154,23 +154,6 @@ func TestLogDBConfigMemSize(t *testing.T) {
 	}
 }
 
-func TestTransportFactoryAndModuleCanNotBeSetTogether(t *testing.T) {
-	m := &defaultTransport{}
-	c := NodeHostConfig{
-		RaftAddress:    "localhost:9010",
-		RTTMillisecond: 100,
-		NodeHostDir:    "/data",
-		RaftRPCFactory: m.Create,
-	}
-	if err := c.Validate(); err != nil {
-		t.Fatalf("cfg not valid")
-	}
-	c.Expert.TransportFactory = m
-	if err := c.Validate(); err == nil {
-		t.Fatalf("cfg not considered as invalid")
-	}
-}
-
 func TestLogDBFactoryAndExpertLogDBFactoryCanNotBeSetTogether(t *testing.T) {
 	f := func(NodeHostConfig,
 		LogDBCallback, []string, []string) (raftio.ILogDB, error) {

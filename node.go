@@ -192,8 +192,7 @@ func newNode(peers map[uint64]string,
 	}
 	rn.toApplyQ = sm.TaskQ()
 	rn.sm = sm
-	rn.raftEvents = newRaftEventListener(config.ClusterID,
-		config.NodeID, &rn.leaderID, nhConfig.EnableMetrics, liQueue)
+	rn.raftEvents = newRaftEventListener(config.ClusterID, config.NodeID, &rn.leaderID, liQueue)
 	new, err := rn.startRaft(config, peers, initialMember)
 	if err != nil {
 		return nil, err
