@@ -91,7 +91,7 @@ func NewEnv(nhConfig config.NodeHostConfig, fs vfs.IFS) (*Env, error) {
 		return nil, err
 	}
 	if len(hostname) == 0 {
-		panic("failed to get hostname")
+		s.hostname = "default"
 	}
 	s.hostname = hostname
 	return s, nil
