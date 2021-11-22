@@ -18,8 +18,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/coufalja/tugboat/internal/rsm"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/rsm"
 	"github.com/lni/goutils/random"
 )
 

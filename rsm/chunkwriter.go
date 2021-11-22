@@ -20,9 +20,9 @@ import (
 	"time"
 
 	"github.com/coufalja/tugboat/internal/fileutil"
-	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/server"
 	sm "github.com/coufalja/tugboat/statemachine"
 )
 

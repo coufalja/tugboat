@@ -16,8 +16,8 @@ package raft
 
 import (
 	"github.com/cockroachdb/errors"
-	"github.com/coufalja/tugboat/internal/server"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/rate"
 )
 
 // LogTestHelper is a helper type used for testing logEntry.
@@ -29,7 +29,7 @@ type LogTestHelper struct {
 // purpose.
 func NewLog(logdb ILogDB) *LogTestHelper {
 	return &LogTestHelper{
-		el: newEntryLog(logdb, server.NewInMemRateLimiter(0)),
+		el: newEntryLog(logdb, rate.NewInMemRateLimiter(0)),
 	}
 }
 

@@ -20,8 +20,8 @@ import (
 	"sync/atomic"
 
 	"github.com/VictoriaMetrics/metrics"
-	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/raftio"
+	"github.com/coufalja/tugboat/server"
 )
 
 // WriteHealthMetrics writes all health metrics in Prometheus format to the

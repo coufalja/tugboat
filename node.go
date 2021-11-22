@@ -24,10 +24,10 @@ import (
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/logdb"
 	"github.com/coufalja/tugboat/internal/raft"
-	"github.com/coufalja/tugboat/internal/rsm"
-	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
+	rsm2 "github.com/coufalja/tugboat/rsm"
+	server2 "github.com/coufalja/tugboat/server"
 	sm "github.com/coufalja/tugboat/statemachine"
 	"github.com/lni/goutils/logutil"
 	"github.com/lni/goutils/syncutil"
@@ -75,9 +75,9 @@ type node struct {
 	getStreamSink         func(uint64, uint64) pb.IChunkSink
 	ss                    snapshotState
 	configChangeC         <-chan configChangeRequest
-	snapshotC             <-chan rsm.SSRequest
-	toApplyQ              *rsm.TaskQueue
-	toCommitQ             *rsm.TaskQueue
+	snapshotC             <-chan rsm2.SSRequest
+	toApplyQ              *rsm2.TaskQueue
+	toCommitQ             *rsm2.TaskQueue
 	syncTask              task
 	metrics               *logDBMetrics
 	stopC                 chan struct{}
@@ -86,7 +86,7 @@ type node struct {
 	handleSnapshotStatus  func(uint64, uint64, bool)
 	sendRaftMessage       func(pb.Message)
 	validateTarget        func(string) bool
-	sm                    *rsm.StateMachine
+	sm                    *rsm2.StateMachine
 	incomingReadIndexes   *readIndexQueue
 	incomingProposals     *entryQueue
 	snapshotLock          syncutil.Lock
@@ -99,7 +99,7 @@ type node struct {
 	p                     raft.Peer
 	logReader             *logdb.LogReader
 	snapshotter           *snapshotter
-	mq                    *server.MessageQueue
+	mq                    *server2.MessageQueue
 	raftAddress           string
 	config                config.Config
 	currentTick           uint64
@@ -121,7 +121,7 @@ type node struct {
 	notifyCommit          bool
 }
 
-var _ rsm.INode = (*node)(nil)
+var _ rsm2.INode = (*node)(nil)
 
 var instanceID uint64
 
@@ -129,7 +129,7 @@ func newNode(peers map[uint64]string,
 	initialMember bool,
 	config config.Config,
 	nhConfig config.NodeHostConfig,
-	createSM rsm.ManagedStateMachineFactory,
+	createSM rsm2.ManagedStateMachineFactory,
 	snapshotter *snapshotter,
 	logReader *logdb.LogReader,
 	pipeline pipeline,
@@ -146,9 +146,9 @@ func newNode(peers map[uint64]string,
 	proposals := newEntryQueue(incomingProposalsMaxLen, lazyFreeCycle)
 	readIndexes := newReadIndexQueue(incomingReadIndexMaxLen)
 	configChangeC := make(chan configChangeRequest, 1)
-	snapshotC := make(chan rsm.SSRequest, 1)
+	snapshotC := make(chan rsm2.SSRequest, 1)
 	stopC := make(chan struct{})
-	mq := server.NewMessageQueue(receiveQueueLen,
+	mq := server2.NewMessageQueue(receiveQueueLen,
 		false, lazyFreeCycle, nhConfig.MaxReceiveQueueSize)
 	rn := &node{
 		clusterID:             config.ClusterID,
@@ -186,9 +186,9 @@ func newNode(peers map[uint64]string,
 		validateTarget:        nhConfig.GetTargetValidator(),
 	}
 	ds := createSM(config.ClusterID, config.NodeID, stopC)
-	sm := rsm.NewStateMachine(ds, snapshotter, config, rn, snapshotter.fs)
+	sm := rsm2.NewStateMachine(ds, snapshotter, config, rn, snapshotter.fs)
 	if notifyCommit {
-		rn.toCommitQ = rsm.NewTaskQueue()
+		rn.toCommitQ = rsm2.NewTaskQueue()
 	}
 	rn.toApplyQ = sm.TaskQ()
 	rn.sm = sm
@@ -445,10 +445,10 @@ func (n *node) requestSnapshot(opt SnapshotOption,
 	if n.isWitness() {
 		return nil, ErrInvalidOperation
 	}
-	st := rsm.UserRequested
+	st := rsm2.UserRequested
 	if opt.Exported {
 		plog.Debugf("%s called export snapshot", n.id())
-		st = rsm.Exported
+		st = rsm2.Exported
 		exist, err := fileutil.Exist(opt.ExportPath, n.snapshotter.fs)
 		if err != nil {
 			return nil, err
@@ -526,8 +526,8 @@ func (n *node) destroy() error {
 func (n *node) offloaded() {
 	if n.sm.Offloaded() {
 		n.pipeline.setCloseReady(n)
-		n.sysEvents.Publish(server.SystemEvent{
-			Type:      server.NodeUnloaded,
+		n.sysEvents.Publish(server2.SystemEvent{
+			Type:      server2.NodeUnloaded,
 			ClusterID: n.clusterID,
 			NodeID:    n.nodeID,
 		})
@@ -538,7 +538,7 @@ func (n *node) loaded() {
 	n.sm.Loaded()
 }
 
-func (n *node) pushTask(rec rsm.Task, notify bool) {
+func (n *node) pushTask(rec rsm2.Task, notify bool) {
 	if n.notifyCommit {
 		n.toCommitQ.Add(rec)
 		if notify {
@@ -556,20 +556,20 @@ func (n *node) pushEntries(ents []pb.Entry) {
 	if len(ents) == 0 {
 		return
 	}
-	n.pushTask(rsm.Task{Entries: ents}, false)
+	n.pushTask(rsm2.Task{Entries: ents}, false)
 	n.pushedIndex = ents[len(ents)-1].Index
 }
 
 func (n *node) pushStreamSnapshotRequest(clusterID uint64, nodeID uint64) {
-	n.pushTask(rsm.Task{
+	n.pushTask(rsm2.Task{
 		ClusterID: clusterID,
 		NodeID:    nodeID,
 		Stream:    true,
 	}, true)
 }
 
-func (n *node) pushTakeSnapshotRequest(req rsm.SSRequest) {
-	n.pushTask(rsm.Task{
+func (n *node) pushTakeSnapshotRequest(req rsm2.SSRequest) {
+	n.pushTask(rsm2.Task{
 		Save:      true,
 		SSRequest: req,
 	}, true)
@@ -585,7 +585,7 @@ func (n *node) pushSnapshot(ss pb.Snapshot, applied uint64) {
 		plog.Panicf("out of date snapshot, index %d, pushed %d, applied %d, ss %d",
 			ss.Index, n.pushedIndex, applied, n.ss.getIndex())
 	}
-	n.pushTask(rsm.Task{
+	n.pushTask(rsm2.Task{
 		Recover: true,
 		Index:   ss.Index,
 	}, true)
@@ -666,21 +666,21 @@ func recoverAborted(err error) bool {
 		errors.Is(err, raft.ErrSnapshotOutOfDate)
 }
 
-func (n *node) save(rec rsm.Task) error {
+func (n *node) save(rec rsm2.Task) error {
 	index, err := n.doSave(rec.SSRequest)
 	if err != nil {
 		return err
 	}
 	n.pendingSnapshot.apply(rec.SSRequest.Key, index == 0, false, index)
-	n.sysEvents.Publish(server.SystemEvent{
-		Type:      server.SnapshotCreated,
+	n.sysEvents.Publish(server2.SystemEvent{
+		Type:      server2.SnapshotCreated,
 		ClusterID: n.clusterID,
 		NodeID:    n.nodeID,
 	})
 	return nil
 }
 
-func (n *node) doSave(req rsm.SSRequest) (uint64, error) {
+func (n *node) doSave(req rsm2.SSRequest) (uint64, error) {
 	n.snapshotLock.Lock()
 	defer n.snapshotLock.Unlock()
 	if !req.Exported() && n.sm.GetLastApplied() <= n.ss.getIndex() {
@@ -730,13 +730,13 @@ func (n *node) doSave(req rsm.SSRequest) (uint64, error) {
 	return ss.Index, nil
 }
 
-func (n *node) compactLog(req rsm.SSRequest, index uint64) {
+func (n *node) compactLog(req rsm2.SSRequest, index uint64) {
 	if overhead := n.compactionOverhead(req); index > overhead {
 		n.ss.setCompactLogTo(index - overhead)
 	}
 }
 
-func (n *node) compactionOverhead(req rsm.SSRequest) uint64 {
+func (n *node) compactionOverhead(req rsm2.SSRequest) uint64 {
 	if req.OverrideCompaction {
 		return req.CompactionOverhead
 	}
@@ -755,7 +755,7 @@ func (n *node) stream(sink pb.IChunkSink) error {
 	return nil
 }
 
-func (n *node) recover(rec rsm.Task) (_ uint64, err error) {
+func (n *node) recover(rec rsm2.Task) (_ uint64, err error) {
 	n.snapshotLock.Lock()
 	defer n.snapshotLock.Unlock()
 	if rec.Initial && n.OnDiskStateMachine() {
@@ -793,10 +793,10 @@ func (n *node) recover(rec rsm.Task) (_ uint64, err error) {
 				return 0, errors.Wrapf(err, "%s shrink failed", n.id())
 			}
 		}
-		n.compactLog(rsm.DefaultSSRequest, ss.Index)
+		n.compactLog(rsm2.DefaultSSRequest, ss.Index)
 	}
-	n.sysEvents.Publish(server.SystemEvent{
-		Type:      server.SnapshotRecovered,
+	n.sysEvents.Publish(server2.SystemEvent{
+		Type:      server2.SnapshotRecovered,
 		ClusterID: n.clusterID,
 		NodeID:    n.nodeID,
 		Index:     ss.Index,
@@ -832,7 +832,7 @@ func (n *node) recoverFromSnapshotDone() {
 	n.applyReady()
 }
 
-func (n *node) handleTask(ts []rsm.Task, es []sm.Entry) (rsm.Task, error) {
+func (n *node) handleTask(ts []rsm2.Task, es []sm.Entry) (rsm2.Task, error) {
 	return n.sm.Handle(ts, es)
 }
 
@@ -848,7 +848,7 @@ func (n *node) runSyncTask() {
 		return
 	}
 	if !n.sm.TaskChanBusy() {
-		n.pushTask(rsm.Task{PeriodicSync: true}, true)
+		n.pushTask(rsm2.Task{PeriodicSync: true}, true)
 	}
 }
 
@@ -869,8 +869,8 @@ func (n *node) removeLog() error {
 		}
 		plog.Infof("%s compacted log up to index %d", n.id(), compactTo)
 		n.ss.setCompactedTo(compactTo)
-		n.sysEvents.Publish(server.SystemEvent{
-			Type:      server.LogCompacted,
+		n.sysEvents.Publish(server2.SystemEvent{
+			Type:      server2.LogCompacted,
 			ClusterID: n.clusterID,
 			NodeID:    n.nodeID,
 			Index:     compactTo,
@@ -892,8 +892,8 @@ func (n *node) requestCompaction() (*SysOpState, error) {
 		if err != nil {
 			return nil, err
 		}
-		n.sysEvents.Publish(server.SystemEvent{
-			Type:      server.LogDBCompacted,
+		n.sysEvents.Publish(server2.SystemEvent{
+			Type:      server2.LogDBCompacted,
 			ClusterID: n.clusterID,
 			NodeID:    n.nodeID,
 			Index:     compactTo,
@@ -1014,7 +1014,7 @@ func (n *node) processRaftUpdate(ud pb.Update) error {
 	}
 	n.runSyncTask()
 	if n.saveSnapshotRequired(ud.LastApplied) {
-		n.pushTakeSnapshotRequest(rsm.SSRequest{})
+		n.pushTakeSnapshotRequest(rsm2.SSRequest{})
 	}
 	return nil
 }
@@ -1139,7 +1139,7 @@ func (n *node) handleLeaderTransfer() (bool, error) {
 }
 
 func (n *node) handleSnapshot(lastApplied uint64) bool {
-	var req rsm.SSRequest
+	var req rsm2.SSRequest
 	select {
 	case req = <-n.snapshotC:
 	default:
@@ -1279,7 +1279,7 @@ func (n *node) setInitialStatus(index uint64) {
 	n.setInitialized()
 }
 
-func (n *node) handleSnapshotTask(task rsm.Task) {
+func (n *node) handleSnapshotTask(task rsm2.Task) {
 	if n.ss.recovering() {
 		plog.Panicf("%s recovering from snapshot again on %s",
 			n.id(), n.getRaftAddress())
@@ -1309,7 +1309,7 @@ func (n *node) reportSnapshotStatus(clusterID uint64,
 	n.handleSnapshotStatus(clusterID, nodeID, failed)
 }
 
-func (n *node) reportStreamSnapshot(rec rsm.Task) {
+func (n *node) reportStreamSnapshot(rec rsm2.Task) {
 	n.ss.setStreaming()
 	getSinkFn := func() pb.IChunkSink {
 		conn := n.getStreamSink(rec.ClusterID, rec.NodeID)
@@ -1335,13 +1335,13 @@ func (n *node) canStream() bool {
 	return true
 }
 
-func (n *node) reportSaveSnapshot(rec rsm.Task) {
+func (n *node) reportSaveSnapshot(rec rsm2.Task) {
 	n.ss.setSaving()
 	n.ss.setSaveReq(rec)
 	n.pipeline.setSaveReady(n.clusterID)
 }
 
-func (n *node) reportRecoverSnapshot(rec rsm.Task) {
+func (n *node) reportRecoverSnapshot(rec rsm2.Task) {
 	n.ss.setRecovering()
 	n.ss.setRecoverReq(rec)
 	n.pipeline.setRecoverReady(n.clusterID)
@@ -1369,7 +1369,7 @@ func (n *node) processUninitializedNodeStatus() bool {
 	if !n.initialized() {
 		plog.Debugf("%s checking initial snapshot", n.id())
 		n.ss.setRecovering()
-		n.reportRecoverSnapshot(rsm.Task{
+		n.reportRecoverSnapshot(rsm2.Task{
 			Recover: true,
 			Initial: true,
 			NewNode: n.new,
@@ -1391,8 +1391,8 @@ func (n *node) processRecoverStatus() bool {
 		if rec.Initial {
 			plog.Infof("%s initialized using %s", n.id(), n.ssid(rec.Index))
 			n.setInitialStatus(rec.Index)
-			n.sysEvents.Publish(server.SystemEvent{
-				Type:      server.NodeReady,
+			n.sysEvents.Publish(server2.SystemEvent{
+				Type:      server2.NodeReady,
 				ClusterID: n.clusterID,
 				NodeID:    n.nodeID,
 			})
@@ -1458,8 +1458,8 @@ func (n *node) notifyConfigChange() {
 		Nodes:             m.Addresses,
 	}
 	n.clusterInfo.Store(ci)
-	n.sysEvents.Publish(server.SystemEvent{
-		Type:      server.MembershipChanged,
+	n.sysEvents.Publish(server2.SystemEvent{
+		Type:      server2.MembershipChanged,
 		ClusterID: n.clusterID,
 		NodeID:    n.nodeID,
 	})

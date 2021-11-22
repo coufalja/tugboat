@@ -28,11 +28,11 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/raft"
-	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/internal/utils"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/server"
 	sm "github.com/coufalja/tugboat/statemachine"
 	"github.com/lni/goutils/logutil"
 )

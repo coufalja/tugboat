@@ -35,8 +35,8 @@ import (
 
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/fileutil"
-	"github.com/coufalja/tugboat/internal/server"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/rate"
 )
 
 var testRateLimit = uint64(1024 * 128)
@@ -830,7 +830,7 @@ func TestDuelingCandidates(t *testing.T) {
 	}{
 		{a, follower, 2, wlog},
 		{b, follower, 2, wlog},
-		{c, follower, 2, newEntryLog(NewTestLogDB(), server.NewInMemRateLimiter(0))},
+		{c, follower, 2, newEntryLog(NewTestLogDB(), rate.NewInMemRateLimiter(0))},
 	}
 
 	for i, tt := range tests {
@@ -896,7 +896,7 @@ func TestDuelingPreCandidates(t *testing.T) {
 	}{
 		{a, leader, 1, wlog},
 		{b, follower, 1, wlog},
-		{c, follower, 1, newEntryLog(NewTestLogDB(), server.NewInMemRateLimiter(0))},
+		{c, follower, 1, newEntryLog(NewTestLogDB(), rate.NewInMemRateLimiter(0))},
 	}
 
 	for i, tt := range tests {
@@ -1046,7 +1046,7 @@ func TestProposal(t *testing.T) {
 		send(pb.Message{From: 1, To: 1, Type: pb.Election})
 		send(pb.Message{From: 1, To: 1, Type: pb.Propose, Entries: []pb.Entry{{Cmd: data}}})
 
-		wantLog := newEntryLog(NewTestLogDB(), server.NewInMemRateLimiter(0))
+		wantLog := newEntryLog(NewTestLogDB(), rate.NewInMemRateLimiter(0))
 		if tt.success {
 			wantLog = &entryLog{
 				logdb: &TestLogDB{

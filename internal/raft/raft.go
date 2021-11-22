@@ -28,9 +28,10 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/config"
-	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/logger"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/rate"
+	server2 "github.com/coufalja/tugboat/server"
 	"github.com/lni/goutils/logutil"
 	"github.com/lni/goutils/random"
 )
@@ -194,12 +195,12 @@ var dn = logutil.DescribeNode
 
 type raft struct {
 	handlers                  [numStates][numMessageTypes]handlerFunc
-	events                    server.IRaftEventListener
+	events                    server2.IRaftEventListener
 	hasNotAppliedConfigChange func() bool
 	votes                     map[uint64]bool
 	handle                    stepFunc
 	log                       *entryLog
-	rl                        *server.InMemRateLimiter
+	rl                        *rate.InMemRateLimiter
 	remotes                   map[uint64]*remote
 	nonVotings                map[uint64]*remote
 	witnesses                 map[uint64]*remote
@@ -209,7 +210,7 @@ type raft struct {
 	droppedReadIndexes        []pb.SystemCtx
 	droppedEntries            []pb.Entry
 	readyToRead               []pb.ReadyToRead
-	prevLeader                server.LeaderInfo
+	prevLeader                server2.LeaderInfo
 	state                     State
 	leaderTransferTarget      uint64
 	leaderID                  uint64
@@ -239,7 +240,7 @@ func newRaft(c config.Config, logdb ILogDB) *raft {
 	if logdb == nil {
 		panic("logdb is nil")
 	}
-	rl := server.NewInMemRateLimiter(c.MaxInMemLogSize)
+	rl := rate.NewInMemRateLimiter(c.MaxInMemLogSize)
 	r := &raft{
 		clusterID:        c.ClusterID,
 		nodeID:           c.NodeID,
@@ -350,7 +351,7 @@ func (r *raft) setLeaderID(leaderID uint64) {
 	if r.events != nil {
 		if (r.term == 0 && leaderID == NoLeader) ||
 			leaderID != r.prevLeader.LeaderID || r.term != r.prevLeader.Term {
-			info := server.LeaderInfo{
+			info := server2.LeaderInfo{
 				ClusterID: r.clusterID,
 				NodeID:    r.nodeID,
 				LeaderID:  leaderID,
@@ -1160,7 +1161,7 @@ func (r *raft) campaign() error {
 	r.becomeCandidate()
 	term := r.term
 	if r.events != nil {
-		info := server.CampaignInfo{
+		info := server2.CampaignInfo{
 			ClusterID: r.clusterID,
 			NodeID:    r.nodeID,
 			Term:      term,
@@ -1416,7 +1417,7 @@ func (r *raft) handleInstallSnapshotMessage(m pb.Message) error {
 		plog.Debugf("%s rejected snapshot %d term %d", r.describe(), index, term)
 		resp.LogIndex = r.log.committed
 		if r.events != nil {
-			info := server.SnapshotInfo{
+			info := server2.SnapshotInfo{
 				ClusterID: r.clusterID,
 				NodeID:    r.nodeID,
 				Index:     m.Snapshot.Index,
@@ -1458,7 +1459,7 @@ func (r *raft) handleReplicateMessage(m pb.Message) error {
 		resp.LogIndex = m.LogIndex
 		resp.Hint = r.log.lastIndex()
 		if r.events != nil {
-			info := server.ReplicationInfo{
+			info := server2.ReplicationInfo{
 				ClusterID: r.clusterID,
 				NodeID:    r.nodeID,
 				Index:     m.LogIndex,
@@ -1634,7 +1635,7 @@ func (r *raft) handleNodeElection(m pb.Message) error {
 			plog.Warningf("%s campaign skipped, pending config change",
 				r.describe())
 			if r.events != nil {
-				info := server.CampaignInfo{
+				info := server2.CampaignInfo{
 					ClusterID: r.clusterID,
 					NodeID:    r.nodeID,
 					Term:      r.term,
@@ -2262,7 +2263,7 @@ func (r *raft) reportDroppedConfigChange(e pb.Entry) {
 func (r *raft) reportDroppedProposal(m pb.Message) {
 	r.droppedEntries = append(r.droppedEntries, newEntrySlice(m.Entries)...)
 	if r.events != nil {
-		info := server.ProposalInfo{
+		info := server2.ProposalInfo{
 			ClusterID: r.clusterID,
 			NodeID:    r.nodeID,
 			Entries:   m.Entries,
@@ -2278,7 +2279,7 @@ func (r *raft) reportDroppedReadIndex(m pb.Message) {
 	}
 	r.droppedReadIndexes = append(r.droppedReadIndexes, sysctx)
 	if r.events != nil {
-		info := server.ReadIndexInfo{
+		info := server2.ReadIndexInfo{
 			ClusterID: r.clusterID,
 			NodeID:    r.nodeID,
 		}

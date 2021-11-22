@@ -23,8 +23,8 @@ import (
 
 	"github.com/coufalja/tugboat/client"
 	"github.com/coufalja/tugboat/config"
-	"github.com/coufalja/tugboat/internal/rsm"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/rsm"
 	sm "github.com/coufalja/tugboat/statemachine"
 	"github.com/lni/goutils/random"
 )

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package transport
+package tugboat
 
 import (
 	"fmt"
@@ -20,8 +20,8 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/config"
-	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/raftio"
+	"github.com/coufalja/tugboat/server"
 	"github.com/lni/goutils/logutil"
 )
 
@@ -29,14 +29,12 @@ import (
 // is unknown.
 var ErrUnknownTarget = errors.New("target address unknown")
 
-var _ IResolver = (*Registry)(nil)
-
 // Registry is used to manage all known node addresses in the multi raft system.
 // The transport layer uses this address registry to locate nodes.
 type Registry struct {
 	partitioner server.IPartitioner
 	validate    config.TargetValidator
-	addr        sync.Map // map of raftio.NodeInfo => string
+	Addr        sync.Map // map of raftio.NodeInfo => string
 }
 
 // NewNodeRegistry returns a new Registry object.
@@ -57,7 +55,7 @@ func (n *Registry) Add(clusterID uint64, nodeID uint64, target string) {
 		plog.Panicf("invalid target %s", target)
 	}
 	key := raftio.GetNodeInfo(clusterID, nodeID)
-	v, ok := n.addr.LoadOrStore(key, target)
+	v, ok := n.Addr.LoadOrStore(key, target)
 	if ok {
 		if v.(string) != target {
 			plog.Panicf("inconsistent target for %s, %s:%s",
@@ -75,13 +73,13 @@ func (n *Registry) getConnectionKey(addr string, clusterID uint64) string {
 
 // Remove removes a remote from the node registry.
 func (n *Registry) Remove(clusterID uint64, nodeID uint64) {
-	n.addr.Delete(raftio.GetNodeInfo(clusterID, nodeID))
+	n.Addr.Delete(raftio.GetNodeInfo(clusterID, nodeID))
 }
 
 // RemoveCluster removes all nodes info associated with the specified cluster.
 func (n *Registry) RemoveCluster(clusterID uint64) {
 	var toRemove []raftio.NodeInfo
-	n.addr.Range(func(k, v interface{}) bool {
+	n.Addr.Range(func(k, v interface{}) bool {
 		ni := k.(raftio.NodeInfo)
 		if ni.ClusterID == clusterID {
 			toRemove = append(toRemove, ni)
@@ -89,14 +87,14 @@ func (n *Registry) RemoveCluster(clusterID uint64) {
 		return true
 	})
 	for _, v := range toRemove {
-		n.addr.Delete(v)
+		n.Addr.Delete(v)
 	}
 }
 
 // Resolve looks up the Addr of the specified node.
 func (n *Registry) Resolve(clusterID uint64, nodeID uint64) (string, string, error) {
 	key := raftio.GetNodeInfo(clusterID, nodeID)
-	addr, ok := n.addr.Load(key)
+	addr, ok := n.Addr.Load(key)
 	if !ok {
 		return "", "", ErrUnknownTarget
 	}

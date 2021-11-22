@@ -28,14 +28,13 @@ import (
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/logdb"
 	"github.com/coufalja/tugboat/internal/raft"
-	"github.com/coufalja/tugboat/internal/rsm"
-	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/internal/tests"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/rsm"
+	"github.com/coufalja/tugboat/server"
 	sm "github.com/coufalja/tugboat/statemachine"
-	"github.com/coufalja/tugboat/transport"
 	"github.com/lni/goutils/leaktest"
 	"github.com/lni/goutils/random"
 )
@@ -240,7 +239,7 @@ func doGetTestRaftNodes(startID uint64, count int, ordered bool,
 			return rsm.NewNativeSM(cfg, rsm.NewInMemStateMachine(noopSM), done)
 		}
 		// node registry
-		nr := transport.NewNodeRegistry(streamConnections, nil)
+		nr := NewNodeRegistry(streamConnections, nil)
 		ch := router.getQ(testClusterID, i)
 		nhConfig := config.NodeHostConfig{RTTMillisecond: tickMillisecond}
 		node, err := newNode(peers,

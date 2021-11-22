@@ -19,6 +19,7 @@ import (
 	"sync/atomic"
 
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/rate"
 )
 
 type delayed struct {
@@ -29,7 +30,7 @@ type delayed struct {
 // MessageQueue is the queue used to hold Raft messages.
 type MessageQueue struct {
 	ch            chan struct{}
-	rl            *RateLimiter
+	rl            *rate.RateLimiter
 	left          []pb.Message
 	right         []pb.Message
 	nodrop        []pb.Message
@@ -49,7 +50,7 @@ type MessageQueue struct {
 func NewMessageQueue(size uint64,
 	ch bool, lazyFreeCycle uint64, maxMemorySize uint64) *MessageQueue {
 	q := &MessageQueue{
-		rl:            NewRateLimiter(maxMemorySize),
+		rl:            rate.NewRateLimiter(maxMemorySize),
 		size:          size,
 		lazyFreeCycle: lazyFreeCycle,
 		left:          make([]pb.Message, size),

@@ -12,12 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package transport
+package tugboat
 
 import (
 	"testing"
 
 	"github.com/lni/goutils/stringutil"
+)
+
+const (
+	streamingChanLength = 4
 )
 
 func TestPeerCanBeAdded(t *testing.T) {
@@ -40,7 +44,7 @@ func TestPeerAddressCanNotBeUpdated(t *testing.T) {
 	nodes := NewNodeRegistry(streamingChanLength, nil)
 	defer func() {
 		if r := recover(); r == nil {
-			t.Fatalf("didn't panic when updating addr")
+			t.Fatalf("didn't panic when updating Addr")
 		}
 	}()
 	nodes.Add(100, 2, "a2:2")

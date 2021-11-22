@@ -236,7 +236,6 @@ func GetEntrySliceInMemSize(ents []Entry) uint64 {
 // IChunkSink is the snapshot chunk sink for handling snapshot chunks being
 // streamed.
 type IChunkSink interface {
-	// return (sent, stopped)
 	Receive(chunk Chunk) (bool, bool)
 	Close() error
 	ClusterID() uint64

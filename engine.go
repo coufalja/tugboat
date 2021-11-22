@@ -20,10 +20,10 @@ import (
 	"time"
 
 	"github.com/coufalja/tugboat/config"
-	"github.com/coufalja/tugboat/internal/rsm"
-	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/rsm"
+	server2 "github.com/coufalja/tugboat/server"
 	sm "github.com/coufalja/tugboat/statemachine"
 	"github.com/lni/goutils/syncutil"
 )
@@ -124,7 +124,7 @@ func (l *loadedNodes) updateFromLoadedSSNodes(from from,
 }
 
 type workReady struct {
-	partitioner server.IPartitioner
+	partitioner server2.IPartitioner
 	maps        []*readyCluster
 	channels    []chan struct{}
 	count       uint64
@@ -132,7 +132,7 @@ type workReady struct {
 
 func newWorkReady(count uint64) *workReady {
 	wr := &workReady{
-		partitioner: server.NewFixedPartitioner(count),
+		partitioner: server2.NewFixedPartitioner(count),
 		count:       count,
 		maps:        make([]*readyCluster, count),
 		channels:    make([]chan struct{}, count),
@@ -144,7 +144,7 @@ func newWorkReady(count uint64) *workReady {
 	return wr
 }
 
-func (wr *workReady) getPartitioner() server.IPartitioner {
+func (wr *workReady) getPartitioner() server2.IPartitioner {
 	return wr.partitioner
 }
 
@@ -966,7 +966,7 @@ type engine struct {
 	taskStopper     *syncutil.Stopper
 	nh              nodeLoader
 	loaded          *loadedNodes
-	env             *server.Env
+	env             *server2.Env
 	logdb           raftio.ILogDB
 	stepWorkReady   *workReady
 	stepCCIReady    *workReady
@@ -981,7 +981,7 @@ type engine struct {
 }
 
 func newExecEngine(nh nodeLoader, cfg config.EngineConfig, notifyCommit bool,
-	errorInjection bool, env *server.Env, logdb raftio.ILogDB) *engine {
+	errorInjection bool, env *server2.Env, logdb raftio.ILogDB) *engine {
 	if cfg.ExecShards == 0 {
 		panic("ExecShards == 0")
 	}
@@ -1235,7 +1235,7 @@ func (e *engine) loadStepNodes(workerID uint64,
 }
 
 func (e *engine) loadBucketNodes(workerID uint64,
-	csi uint64, nodes map[uint64]*node, partitioner server.IPartitioner,
+	csi uint64, nodes map[uint64]*node, partitioner server2.IPartitioner,
 	from from) (map[uint64]*node, []*node, uint64) {
 	bucket := workerID - 1
 	newCSI := e.nh.getClusterSetIndex()

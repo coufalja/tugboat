@@ -24,12 +24,12 @@ import (
 	"github.com/coufalja/tugboat/client"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/raft"
-	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/internal/tests"
 	"github.com/coufalja/tugboat/internal/tests/kvpb"
 	"github.com/coufalja/tugboat/internal/utils/dio"
 	"github.com/coufalja/tugboat/internal/vfs"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/server"
 	sm "github.com/coufalja/tugboat/statemachine"
 	"github.com/lni/goutils/leaktest"
 )

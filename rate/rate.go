@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+package rate
 
 import (
 	"math"
@@ -78,7 +78,6 @@ func (r *RateLimiter) RateLimited() bool {
 	}
 	v := r.Get()
 	if v > r.maxSize {
-		plog.Infof("rate limited, v: %d, maxSize %d", v, r.maxSize)
 		return true
 	}
 	return false

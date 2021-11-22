@@ -70,14 +70,13 @@ import (
 	"github.com/coufalja/tugboat/internal/id"
 	"github.com/coufalja/tugboat/internal/invariants"
 	"github.com/coufalja/tugboat/internal/logdb"
-	"github.com/coufalja/tugboat/internal/rsm"
-	"github.com/coufalja/tugboat/internal/server"
 	"github.com/coufalja/tugboat/internal/utils"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/rsm"
+	"github.com/coufalja/tugboat/server"
 	sm "github.com/coufalja/tugboat/statemachine"
-	"github.com/coufalja/tugboat/transport"
 	"github.com/lni/goutils/logutil"
 	"github.com/lni/goutils/syncutil"
 )
@@ -230,7 +229,7 @@ type ITransport interface {
 }
 
 // INodeRegistry is the local registry interface used to keep all known
-// nodes in the system..
+// nodes in the system.
 type INodeRegistry interface {
 	Close() error
 	Add(clusterID uint64, nodeID uint64, url string)
@@ -278,7 +277,7 @@ var firstError = utils.FirstError
 
 // NewNodeHost creates a new NodeHost instance. In a typical application, it is
 // expected to have one NodeHost on each server.
-func NewNodeHost(nhConfig config.NodeHostConfig) (*NodeHost, error) {
+func NewNodeHost(nhConfig config.NodeHostConfig, registry INodeRegistry, transport ITransport) (*NodeHost, error) {
 	logBuildTagsAndVersion()
 	if err := nhConfig.Validate(); err != nil {
 		return nil, err
@@ -331,10 +330,7 @@ func NewNodeHost(nhConfig config.NodeHostConfig) (*NodeHost, error) {
 		return nil, err
 	}
 	plog.Infof("NodeHost ID: %s", nh.id.String())
-	if err := nh.createNodeRegistry(); err != nil {
-		nh.Close()
-		return nil, err
-	}
+	nh.nodes = registry
 	errorInjection := false
 	if nhConfig.Expert.FS != nil {
 		_, errorInjection = nhConfig.Expert.FS.(*vfs.ErrorFS)
@@ -342,10 +338,7 @@ func NewNodeHost(nhConfig config.NodeHostConfig) (*NodeHost, error) {
 	}
 	nh.engine = newExecEngine(nh, nhConfig.Expert.Engine,
 		nh.nhConfig.NotifyCommit, errorInjection, nh.env, nh.mu.logdb)
-	if err := nh.createTransport(); err != nil {
-		nh.Close()
-		return nil, err
-	}
+	nh.transport = transport
 	nh.stopper.RunWorker(func() {
 		nh.nodeMonitorMain()
 	})
@@ -1680,27 +1673,6 @@ func (te *transportEvent) ConnectionFailed(addr string, snapshot bool) {
 	})
 }
 
-func (nh *NodeHost) createNodeRegistry() error {
-	validator := nh.nhConfig.GetTargetValidator()
-	plog.Infof("using regular node registry")
-	nh.nodes = transport.NewNodeRegistry(streamConnections, validator)
-	return nil
-}
-
-func (nh *NodeHost) createTransport() error {
-	getSnapshotDir := func(cid uint64, nid uint64) string {
-		return nh.env.GetSnapshotDir(nh.nhConfig.GetDeploymentID(), cid, nid)
-	}
-	tsp, err := transport.NewTransport(nh.nhConfig,
-		nh.msgHandler, nh.env, nh.nodes, getSnapshotDir,
-		&transportEvent{nh: nh}, nh.fs)
-	if err != nil {
-		return err
-	}
-	nh.transport = tsp
-	return nil
-}
-
 func (nh *NodeHost) stopNode(clusterID uint64, nodeID uint64, check bool) error {
 	nh.mu.Lock()
 	defer nh.mu.Unlock()
@@ -1982,8 +1954,6 @@ var (
 type messageHandler struct {
 	nh *NodeHost
 }
-
-var _ transport.IMessageHandler = (*messageHandler)(nil)
 
 func newNodeHostMessageHandler(nh *NodeHost) *messageHandler {
 	return &messageHandler{nh: nh}

@@ -43,8 +43,8 @@ import (
 	"sort"
 
 	"github.com/coufalja/tugboat/config"
-	"github.com/coufalja/tugboat/internal/server"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/server"
 )
 
 // PeerAddress is the basic info for a peer in the Raft cluster.

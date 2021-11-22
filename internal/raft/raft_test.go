@@ -21,8 +21,8 @@ import (
 	"testing"
 
 	"github.com/coufalja/tugboat/config"
-	"github.com/coufalja/tugboat/internal/server"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/rate"
 )
 
 //
@@ -3122,7 +3122,7 @@ func TestResetClearsFollowerRateLimitState(t *testing.T) {
 		t.Errorf("not rate limited")
 	}
 	r.reset(2, true)
-	for i := uint64(0); i <= server.ChangeTickThreashold; i++ {
+	for i := uint64(0); i <= rate.ChangeTickThreashold; i++ {
 		rl.Tick()
 	}
 	if rl.RateLimited() {

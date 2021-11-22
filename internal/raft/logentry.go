@@ -16,8 +16,8 @@ package raft
 
 import (
 	"github.com/cockroachdb/errors"
-	"github.com/coufalja/tugboat/internal/server"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/rate"
 )
 
 const (
@@ -81,7 +81,7 @@ type entryLog struct {
 	processed uint64
 }
 
-func newEntryLog(logdb ILogDB, rl *server.InMemRateLimiter) *entryLog {
+func newEntryLog(logdb ILogDB, rl *rate.InMemRateLimiter) *entryLog {
 	firstIndex, lastIndex := logdb.GetRange()
 	l := &entryLog{
 		logdb:     logdb,

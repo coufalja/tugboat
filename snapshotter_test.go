@@ -24,10 +24,10 @@ import (
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/logdb"
-	"github.com/coufalja/tugboat/internal/rsm"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
+	rsm2 "github.com/coufalja/tugboat/rsm"
 	"github.com/lni/goutils/leaktest"
 )
 
@@ -105,7 +105,7 @@ func TestFinalizeSnapshotReturnExpectedErrorWhenOutOfDate(t *testing.T) {
 		if err := env.CreateTempDir(); err != nil {
 			t.Errorf("create tmp snapshot dir failed %v", err)
 		}
-		if err := s.Commit(ss, rsm.SSRequest{}); !errors.Is(err, errSnapshotOutOfDate) {
+		if err := s.Commit(ss, rsm2.SSRequest{}); !errors.Is(err, errSnapshotOutOfDate) {
 			t.Errorf("unexpected error result %v", err)
 		}
 	}
@@ -141,7 +141,7 @@ func TestSnapshotCanBeFinalized(t *testing.T) {
 			t.Fatalf("write failed %v", err)
 		}
 		f.Close()
-		if err = s.Commit(ss, rsm.SSRequest{}); err != nil {
+		if err = s.Commit(ss, rsm2.SSRequest{}); err != nil {
 			t.Errorf("finalize snapshot failed %v", err)
 		}
 		snapshot, err := ldb.GetSnapshot(1, 1)
@@ -482,7 +482,7 @@ func TestSnapshotterCompact(t *testing.T) {
 			if err := env.CreateTempDir(); err != nil {
 				t.Errorf("failed to create snapshot dir")
 			}
-			if err := snapshotter.Commit(s, rsm.SSRequest{}); err != nil {
+			if err := snapshotter.Commit(s, rsm2.SSRequest{}); err != nil {
 				t.Errorf("failed to save snapshot record")
 			}
 			fp := snapshotter.getFilePath(s.Index)
@@ -529,11 +529,11 @@ func TestShrinkSnapshots(t *testing.T) {
 			if err := env.CreateTempDir(); err != nil {
 				t.Errorf("failed to create snapshot dir")
 			}
-			if err := snapshotter.Commit(s, rsm.SSRequest{}); err != nil {
+			if err := snapshotter.Commit(s, rsm2.SSRequest{}); err != nil {
 				t.Errorf("failed to save snapshot record")
 			}
 			fp = snapshotter.getFilePath(s.Index)
-			writer, err := rsm.NewSnapshotWriter(fp, pb.NoCompression, fs)
+			writer, err := rsm2.NewSnapshotWriter(fp, pb.NoCompression, fs)
 			if err != nil {
 				t.Fatalf("failed to create the snapshot %v", err)
 			}

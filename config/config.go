@@ -178,12 +178,6 @@ type Config struct {
 	//
 	// Witness support is currently experimental.
 	IsWitness bool
-	// Quiesce specifies whether to let the Raft cluster enter quiesce mode when
-	// there is no cluster activity. Clusters in quiesce mode do not exchange
-	// heartbeat messages to minimize bandwidth consumption.
-	//
-	// Quiesce support is currently experimental.
-	Quiesce bool
 }
 
 // Validate validates the Config instance and return an error when any member

@@ -15,8 +15,8 @@
 package raft
 
 import (
-	"github.com/coufalja/tugboat/internal/server"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/coufalja/tugboat/rate"
 )
 
 const (
@@ -28,7 +28,7 @@ const (
 // that will be used by the raft protocol in immediate future.
 type inMemory struct {
 	snapshot       *pb.Snapshot
-	rl             *server.InMemRateLimiter
+	rl             *rate.InMemRateLimiter
 	entries        []pb.Entry
 	savedTo        uint64
 	markerIndex    uint64
@@ -37,7 +37,7 @@ type inMemory struct {
 	shrunk         bool
 }
 
-func newInMemory(lastIndex uint64, rl *server.InMemRateLimiter) inMemory {
+func newInMemory(lastIndex uint64, rl *rate.InMemRateLimiter) inMemory {
 	return inMemory{
 		markerIndex: lastIndex + 1,
 		savedTo:     lastIndex,
