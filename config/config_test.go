@@ -29,11 +29,6 @@ func ExampleNodeHostConfig() {
 		// RaftAddress is the public address that will be used by others to contact
 		// this NodeHost instance.
 		RaftAddress: "node01.raft.company.com:5012",
-		// ListenAddress is the local address to listen on. This field is typically
-		// set when there is port forwarding involved, e.g. your docker container
-		// might has a private address of 172.17.0.2 when the public address of the
-		// host is node01.raft.company.com and tcp port 5012 has been published.
-		ListenAddress: "172.17.0.2:5012",
 	}
 	_ = nhc
 }
@@ -47,22 +42,6 @@ func checkValidAddress(t *testing.T, addr string) {
 func checkInvalidAddress(t *testing.T, addr string) {
 	if IsValidAddress(addr) {
 		t.Errorf("invalid addr %s considered as valid", addr)
-	}
-}
-
-func TestListenAddress(t *testing.T) {
-	nhc := NodeHostConfig{
-		ListenAddress: "listen.address:12345",
-		RaftAddress:   "raft.address:23456",
-	}
-	if nhc.GetListenAddress() != nhc.ListenAddress {
-		t.Errorf("unexpected listen address %s, want %s",
-			nhc.GetListenAddress(), nhc.ListenAddress)
-	}
-	nhc.ListenAddress = ""
-	if nhc.GetListenAddress() != nhc.RaftAddress {
-		t.Errorf("unexpected listen address %s, want %s",
-			nhc.GetListenAddress(), nhc.RaftAddress)
 	}
 }
 

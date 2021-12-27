@@ -19,7 +19,6 @@ configurations.
 package config
 
 import (
-	"crypto/tls"
 	"path/filepath"
 	"reflect"
 
@@ -29,7 +28,6 @@ import (
 	"github.com/coufalja/tugboat/logger"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
-	"github.com/lni/goutils/netutil"
 	"github.com/lni/goutils/stringutil"
 )
 
@@ -271,29 +269,6 @@ type NodeHostConfig struct {
 	// restarts. AddressByNodeHostID should be set to true when the RaftAddress
 	// value might change after restart.
 	RaftAddress string
-	// ListenAddress is an optional field in the hostname:port or IP:port address
-	// form used by the transport module to listen on for Raft message and
-	// snapshots. When the ListenAddress field is not set, The transport module
-	// listens on RaftAddress. If 0.0.0.0 is specified as the IP of the
-	// ListenAddress, Dragonboat listens to the specified port on all network
-	// interfaces. When hostname or domain name is used, it will be resolved to
-	// IPv4 addresses first and Dragonboat listens to all resolved IPv4 addresses.
-	ListenAddress string
-	// MutualTLS defines whether to use mutual TLS for authenticating servers
-	// and clients. Insecure communication is used when MutualTLS is set to
-	// False.
-	// See https://github.com/lni/dragonboat/wiki/TLS-in-Dragonboat for more
-	// details on how to use Mutual TLS.
-	MutualTLS bool
-	// CAFile is the path of the CA certificate file. This field is ignored when
-	// MutualTLS is false.
-	CAFile string
-	// CertFile is the path of the node certificate file. This field is ignored
-	// when MutualTLS is false.
-	CertFile string
-	// KeyFile is the path of the node key file. This field is ignored when
-	// MutualTLS is false.
-	KeyFile string
 	// LogDBFactory is the factory function used for creating the Log DB instance
 	// used by NodeHost. The default zero value causes the default built-in RocksDB
 	// based Log DB implementation to be used.
@@ -322,14 +297,6 @@ type NodeHostConfig struct {
 	// dropped to restrict memory usage. When set to 0, it means the queue size
 	// is unlimited.
 	MaxReceiveQueueSize uint64
-	// MaxSnapshotSendBytesPerSecond defines how much snapshot data can be sent
-	// every second for all Raft clusters managed by the NodeHost instance.
-	// The default value 0 means there is no limit set for snapshot streaming.
-	MaxSnapshotSendBytesPerSecond uint64
-	// MaxSnapshotRecvBytesPerSecond defines how much snapshot data can be
-	// received each second for all Raft clusters managed by the NodeHost instance.
-	// The default value 0 means there is no limit for receiving snapshot data.
-	MaxSnapshotRecvBytesPerSecond uint64
 	// NotifyCommit specifies whether clients should be notified when their
 	// regular proposals and config change requests are committed. By default,
 	// commits are not notified, clients are only notified when their proposals
@@ -408,23 +375,6 @@ func (c *NodeHostConfig) Validate() error {
 	if len(c.NodeHostDir) == 0 {
 		return errors.New("NodeHostConfig.NodeHostDir is empty")
 	}
-	if !c.MutualTLS {
-		plog.Warningf("mutual TLS disabled, communication is insecure")
-		if len(c.CAFile) > 0 || len(c.CertFile) > 0 || len(c.KeyFile) > 0 {
-			plog.Warningf("CAFile/CertFile/KeyFile specified when MutualTLS is disabled")
-		}
-	}
-	if c.MutualTLS {
-		if len(c.CAFile) == 0 {
-			return errors.New("CA file not specified")
-		}
-		if len(c.CertFile) == 0 {
-			return errors.New("cert file not specified")
-		}
-		if len(c.KeyFile) == 0 {
-			return errors.New("key file not specified")
-		}
-	}
 	if c.MaxSendQueueSize > 0 &&
 		c.MaxSendQueueSize < pb.NonCmdFieldSize+1 {
 		return errors.New("MaxSendQueueSize value is too small")
@@ -439,9 +389,6 @@ func (c *NodeHostConfig) Validate() error {
 	validate := c.GetRaftAddressValidator()
 	if !validate(c.RaftAddress) {
 		return errors.New("invalid NodeHost address")
-	}
-	if len(c.ListenAddress) > 0 && !validate(c.ListenAddress) {
-		return errors.New("invalid ListenAddress")
 	}
 	if !c.Expert.Engine.IsEmpty() {
 		if err := c.Expert.Engine.Validate(); err != nil {
@@ -518,46 +465,6 @@ func (c *NodeHostConfig) Prepare() error {
 		c.LogDBFactory = nil
 	}
 	return nil
-}
-
-// GetListenAddress returns the actual address the transport module is going to
-// listen on.
-func (c *NodeHostConfig) GetListenAddress() string {
-	if len(c.ListenAddress) > 0 {
-		return c.ListenAddress
-	}
-	return c.RaftAddress
-}
-
-// GetServerTLSConfig returns the server tls.Config instance based on the
-// TLS settings in NodeHostConfig.
-func (c *NodeHostConfig) GetServerTLSConfig() (*tls.Config, error) {
-	if c.MutualTLS {
-		return netutil.GetServerTLSConfig(c.CAFile, c.CertFile, c.KeyFile)
-	}
-	return nil, nil
-}
-
-// GetClientTLSConfig returns the client tls.Config instance for the specified
-// target based on the TLS settings in NodeHostConfig.
-func (c *NodeHostConfig) GetClientTLSConfig(target string) (*tls.Config, error) {
-	if c.MutualTLS {
-		tlsConfig, err := netutil.GetClientTLSConfig("",
-			c.CAFile, c.CertFile, c.KeyFile)
-		if err != nil {
-			return nil, err
-		}
-		host, err := netutil.GetHost(target)
-		if err != nil {
-			return nil, err
-		}
-		return &tls.Config{
-			ServerName:   host,
-			Certificates: tlsConfig.Certificates,
-			RootCAs:      tlsConfig.RootCAs,
-		}, nil
-	}
-	return nil, nil
 }
 
 // GetDeploymentID returns the deployment ID to be used.
