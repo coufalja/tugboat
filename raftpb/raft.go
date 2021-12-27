@@ -233,6 +233,14 @@ func GetEntrySliceInMemSize(ents []Entry) uint64 {
 	return sz
 }
 
+// IMessageHandler is the interface required to handle incoming raft requests.
+type IMessageHandler interface {
+	HandleMessageBatch(batch MessageBatch) (uint64, uint64)
+	HandleUnreachable(clusterID uint64, nodeID uint64)
+	HandleSnapshotStatus(clusterID uint64, nodeID uint64, rejected bool)
+	HandleSnapshot(clusterID uint64, nodeID uint64, from uint64)
+}
+
 // IChunkSink is the snapshot chunk sink for handling snapshot chunks being
 // streamed.
 type IChunkSink interface {

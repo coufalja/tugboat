@@ -277,7 +277,7 @@ var firstError = utils.FirstError
 
 // NewNodeHost creates a new NodeHost instance. In a typical application, it is
 // expected to have one NodeHost on each server.
-func NewNodeHost(nhConfig config.NodeHostConfig, registry INodeRegistry, transport ITransport) (*NodeHost, error) {
+func NewNodeHost(nhConfig config.NodeHostConfig, registry INodeRegistry, transport func(handler pb.IMessageHandler) ITransport) (*NodeHost, error) {
 	logBuildTagsAndVersion()
 	if err := nhConfig.Validate(); err != nil {
 		return nil, err
@@ -338,7 +338,7 @@ func NewNodeHost(nhConfig config.NodeHostConfig, registry INodeRegistry, transpo
 	}
 	nh.engine = newExecEngine(nh, nhConfig.Expert.Engine,
 		nh.nhConfig.NotifyCommit, errorInjection, nh.env, nh.mu.logdb)
-	nh.transport = transport
+	nh.transport = transport(nh.msgHandler)
 	nh.stopper.RunWorker(func() {
 		nh.nodeMonitorMain()
 	})
