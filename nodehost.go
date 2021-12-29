@@ -77,6 +77,7 @@ import (
 	"github.com/coufalja/tugboat/rsm"
 	"github.com/coufalja/tugboat/server"
 	sm "github.com/coufalja/tugboat/statemachine"
+	"github.com/coufalja/tugboat/transport"
 	"github.com/lni/goutils/logutil"
 	"github.com/lni/goutils/syncutil"
 )
@@ -277,7 +278,7 @@ var firstError = utils.FirstError
 
 // NewNodeHost creates a new NodeHost instance. In a typical application, it is
 // expected to have one NodeHost on each server.
-func NewNodeHost[T ITransport](nhConfig config.NodeHostConfig, registry INodeRegistry, transport func(pb.IMessageHandler, pb.ITransportEvent, func(uint64, uint64) string) (T, error)) (*NodeHost, error) {
+func NewNodeHost[T raftio.ITransport](nhConfig config.NodeHostConfig, transportFactory func(requestHandler raftio.MessageHandler, chunkHandler raftio.ChunkHandler) T) (*NodeHost, error) {
 	logBuildTagsAndVersion()
 	if err := nhConfig.Validate(); err != nil {
 		return nil, err
@@ -330,7 +331,7 @@ func NewNodeHost[T ITransport](nhConfig config.NodeHostConfig, registry INodeReg
 		return nil, err
 	}
 	plog.Infof("NodeHost ID: %s", nh.id.String())
-	nh.nodes = registry
+	nh.nodes = NewNodeRegistry(streamConnections, nhConfig.GetTargetValidator())
 	errorInjection := false
 	if nhConfig.Expert.FS != nil {
 		_, errorInjection = nhConfig.Expert.FS.(*vfs.ErrorFS)
@@ -341,7 +342,8 @@ func NewNodeHost[T ITransport](nhConfig config.NodeHostConfig, registry INodeReg
 	}
 	nh.engine = newExecEngine(nh, nhConfig.Expert.Engine,
 		nh.nhConfig.NotifyCommit, errorInjection, nh.env, nh.mu.logdb)
-	t, err := transport(nh.msgHandler, &transportEvent{nh}, getSnapshotDir)
+
+	t, err := transport.Factory(nhConfig, nh.nodes, nh.msgHandler, &transportEvent{nh}, getSnapshotDir, transportFactory)
 	if err != nil {
 		nh.Close()
 		return nil, err
