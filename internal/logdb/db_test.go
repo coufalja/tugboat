@@ -1088,10 +1088,6 @@ func TestRemoveEntriesTo(t *testing.T) {
 		name := sdb.Name()
 		plog.Infof("name: %s", name)
 		skipSizeCheck = strings.Contains(name, "leveldb")
-		failed, err := sdb.SelfCheckFailed()
-		if err != nil || failed {
-			t.Fatalf("self check failed")
-		}
 		defer db.Close()
 		for i := uint64(0); i < maxIndex; i++ {
 			e := pb.Entry{
@@ -1108,7 +1104,7 @@ func TestRemoveEntriesTo(t *testing.T) {
 			ClusterID:     clusterID,
 			NodeID:        nodeID,
 		}
-		err = db.SaveRaftState([]pb.Update{ud}, 1)
+		err := db.SaveRaftState([]pb.Update{ud}, 1)
 		if err != nil {
 			t.Fatalf("failed to save recs")
 		}
