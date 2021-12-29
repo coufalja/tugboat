@@ -89,10 +89,6 @@ func (r *db) name() string {
 	return r.kvs.Name()
 }
 
-func (r *db) selfCheckFailed() (bool, error) {
-	return hasEntryRecord(r.kvs)
-}
-
 func (r *db) binaryFormat() uint32 {
 	return r.entries.binaryFormat()
 }

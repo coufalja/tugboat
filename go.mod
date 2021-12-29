@@ -1,6 +1,6 @@
 module github.com/coufalja/tugboat
 
-go 1.17
+go 1.18
 
 require (
 	github.com/cockroachdb/errors v1.8.6

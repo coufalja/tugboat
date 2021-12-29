@@ -277,7 +277,7 @@ var firstError = utils.FirstError
 
 // NewNodeHost creates a new NodeHost instance. In a typical application, it is
 // expected to have one NodeHost on each server.
-func NewNodeHost(nhConfig config.NodeHostConfig, registry INodeRegistry, transport func(handler pb.IMessageHandler) ITransport) (*NodeHost, error) {
+func NewNodeHost[T ITransport](nhConfig config.NodeHostConfig, registry INodeRegistry, transport func(pb.IMessageHandler, pb.ITransportEvent, func(uint64, uint64) string) (T, error)) (*NodeHost, error) {
 	logBuildTagsAndVersion()
 	if err := nhConfig.Validate(); err != nil {
 		return nil, err
@@ -336,9 +336,17 @@ func NewNodeHost(nhConfig config.NodeHostConfig, registry INodeRegistry, transpo
 		_, errorInjection = nhConfig.Expert.FS.(*vfs.ErrorFS)
 		plog.Infof("filesystem error injection mode enabled: %t", errorInjection)
 	}
+	getSnapshotDir := func(cid uint64, nid uint64) string {
+		return nh.env.GetSnapshotDir(nh.nhConfig.GetDeploymentID(), cid, nid)
+	}
 	nh.engine = newExecEngine(nh, nhConfig.Expert.Engine,
 		nh.nhConfig.NotifyCommit, errorInjection, nh.env, nh.mu.logdb)
-	nh.transport = transport(nh.msgHandler)
+	t, err := transport(nh.msgHandler, &transportEvent{nh}, getSnapshotDir)
+	if err != nil {
+		nh.Close()
+		return nil, err
+	}
+	nh.transport = t
 	nh.stopper.RunWorker(func() {
 		nh.nodeMonitorMain()
 	})
@@ -1621,15 +1629,6 @@ func (nh *NodeHost) createLogDB() error {
 	ver := ldb.BinaryFormat()
 	if err := nh.env.CheckNodeHostDir(nh.nhConfig, ver, name); err != nil {
 		return err
-	}
-	if shardedrdb, ok := ldb.(*logdb.ShardedDB); ok {
-		failed, err := shardedrdb.SelfCheckFailed()
-		if err != nil {
-			return err
-		}
-		if failed {
-			return server.ErrLogDBBrokenChange
-		}
 	}
 	plog.Infof("logdb memory limit: %d MBytes",
 		nh.nhConfig.Expert.LogDB.MemorySizeMB())

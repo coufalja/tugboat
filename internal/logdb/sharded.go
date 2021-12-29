@@ -134,21 +134,6 @@ func (s *ShardedDB) BinaryFormat() uint32 {
 	return s.shards[0].binaryFormat()
 }
 
-// SelfCheckFailed runs a self check on all db shards and report whether any
-// failure is observed.
-func (s *ShardedDB) SelfCheckFailed() (bool, error) {
-	for _, shard := range s.shards {
-		failed, err := shard.selfCheckFailed()
-		if err != nil {
-			return false, errors.WithStack(err)
-		}
-		if failed {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
 // SaveRaftState saves the raft state and logs found in the raft.Update list
 // to the log db.
 func (s *ShardedDB) SaveRaftState(updates []pb.Update, shardID uint64) error {

@@ -233,6 +233,12 @@ func GetEntrySliceInMemSize(ents []Entry) uint64 {
 	return sz
 }
 
+// ITransportEvent is the interface for notifying connection status changes.
+type ITransportEvent interface {
+	ConnectionEstablished(string, bool)
+	ConnectionFailed(string, bool)
+}
+
 // IMessageHandler is the interface required to handle incoming raft requests.
 type IMessageHandler interface {
 	HandleMessageBatch(batch MessageBatch) (uint64, uint64)
