@@ -140,7 +140,7 @@ test-plugins:
 	$(GOTEST) $(PKGNAME)/plugin
 .PHONY: test-server
 test-server:
-	$(GOTEST) $(PKGNAME)/internal/server
+	$(GOTEST) $(PKGNAME)/server
 .PHONY: test-config
 test-config:
 	$(GOTEST) $(PKGNAME)/config
