@@ -15,6 +15,7 @@
 package logdb
 
 import (
+	"errors"
 	"math"
 	"reflect"
 	"strings"
@@ -22,7 +23,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/vfs"

@@ -17,9 +17,9 @@ package rsm
 import (
 	"io"
 
-	"github.com/cockroachdb/errors"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"
+	"github.com/pkg/errors"
 )
 
 // IStateMachine is an adapter interface for underlying sm.IStateMachine,

@@ -18,7 +18,6 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/client"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/fileutil"
@@ -31,6 +30,7 @@ import (
 	sm "github.com/coufalja/tugboat/statemachine"
 	"github.com/lni/goutils/logutil"
 	"github.com/lni/goutils/syncutil"
+	"github.com/pkg/errors"
 )
 
 const (

@@ -17,7 +17,7 @@ package statemachine
 import (
 	"io"
 
-	"github.com/cockroachdb/errors"
+	"errors"
 )
 
 var (

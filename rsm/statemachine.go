@@ -22,10 +22,10 @@ package rsm
 
 import (
 	"bytes"
+	"errors"
 	"sync"
 	"sync/atomic"
 
-	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/raft"
 	"github.com/coufalja/tugboat/internal/utils"

@@ -28,11 +28,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cockroachdb/errors"
-	"github.com/cockroachdb/errors/oserror"
 	"github.com/coufalja/tugboat/internal/utils"
 	"github.com/coufalja/tugboat/internal/vfs"
 	pb "github.com/coufalja/tugboat/raftpb"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -428,7 +427,7 @@ func TempDir(dir, pattern string, fs vfs.IFS) (name string, err error) {
 	for i := 0; i < 10000; i++ {
 		try := fs.PathJoin(dir, prefix+nextRandom()+suffix)
 		err = fs.MkdirAll(try, 0o700)
-		if oserror.IsExist(err) {
+		if vfs.IsExist(err) {
 			if nconflict++; nconflict > 10 {
 				randmu.Lock()
 				rand = reseed()
@@ -436,8 +435,8 @@ func TempDir(dir, pattern string, fs vfs.IFS) (name string, err error) {
 			}
 			continue
 		}
-		if oserror.IsNotExist(err) {
-			if _, err := fs.Stat(dir); oserror.IsNotExist(err) {
+		if vfs.IsNotExist(err) {
+			if _, err := fs.Stat(dir); vfs.IsNotExist(err) {
 				return "", err
 			}
 		}

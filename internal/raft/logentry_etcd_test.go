@@ -21,10 +21,10 @@
 package raft
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 
-	"github.com/cockroachdb/errors"
 	pb "github.com/coufalja/tugboat/raftpb"
 	"github.com/coufalja/tugboat/rate"
 )

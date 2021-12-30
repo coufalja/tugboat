@@ -22,11 +22,11 @@ to import this package.
 package raft
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"sort"
 
-	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/logger"
 	pb "github.com/coufalja/tugboat/raftpb"

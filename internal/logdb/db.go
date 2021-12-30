@@ -18,13 +18,13 @@ import (
 	"encoding/binary"
 	"math"
 
-	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/logdb/kv"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	"github.com/coufalja/tugboat/server"
+	"github.com/pkg/errors"
 )
 
 var batchSize = uint64(server.LogDBEntryBatchSize)

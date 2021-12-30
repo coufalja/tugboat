@@ -15,10 +15,10 @@
 package rsm
 
 import (
+	"errors"
 	"io"
 	"sync"
 
-	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/config"
 	pb "github.com/coufalja/tugboat/raftpb"
 	sm "github.com/coufalja/tugboat/statemachine"

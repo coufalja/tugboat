@@ -19,10 +19,10 @@ configurations.
 package config
 
 import (
+	"errors"
 	"path/filepath"
 	"reflect"
 
-	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
 	"github.com/coufalja/tugboat/raftio"

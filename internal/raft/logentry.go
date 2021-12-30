@@ -15,7 +15,8 @@
 package raft
 
 import (
-	"github.com/cockroachdb/errors"
+	"errors"
+
 	pb "github.com/coufalja/tugboat/raftpb"
 	"github.com/coufalja/tugboat/rate"
 )

@@ -19,7 +19,6 @@ import (
 	"math"
 	"sync/atomic"
 
-	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/logdb/kv"
 	"github.com/coufalja/tugboat/internal/utils"
@@ -27,6 +26,7 @@ import (
 	pb "github.com/coufalja/tugboat/raftpb"
 	"github.com/coufalja/tugboat/server"
 	"github.com/lni/goutils/syncutil"
+	"github.com/pkg/errors"
 )
 
 // ShardedDB is a LogDB implementation using sharded rocksdb instances.

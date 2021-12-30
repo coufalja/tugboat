@@ -15,12 +15,12 @@
 package rsm
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
 	"testing"
 
-	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/client"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/raft"
@@ -2601,7 +2601,7 @@ func TestPrepareIsNotCalledWhenSavingDummySnapshot(t *testing.T) {
 var errReturnedError = errors.New("test error")
 
 func expectedError(err error) bool {
-	return errors.Is(err, errReturnedError) && tests.HasStack(err)
+	return errors.Is(err, errReturnedError)
 }
 
 type errorUpdateSM struct{}

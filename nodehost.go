@@ -16,6 +16,7 @@ package tugboat
 
 import (
 	"context"
+	"errors"
 	"math"
 	"reflect"
 	"runtime"
@@ -23,7 +24,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/client"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/id"

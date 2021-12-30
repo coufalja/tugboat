@@ -15,10 +15,10 @@
 package tugboat
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 
-	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/raftio"
 	"github.com/coufalja/tugboat/server"

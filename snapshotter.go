@@ -15,9 +15,9 @@
 package tugboat
 
 import (
+	"errors"
 	"strconv"
 
-	"github.com/cockroachdb/errors"
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/logdb"
 	"github.com/coufalja/tugboat/internal/utils/dio"
