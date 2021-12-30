@@ -15,13 +15,12 @@
 package vfs
 
 import (
-	"io"
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/cockroachdb/errors/oserror"
-	pvfs "github.com/cockroachdb/pebble/vfs"
 	gvfs "github.com/lni/vfs"
 )
 
@@ -45,115 +44,16 @@ func NewMemFS() IFS {
 	return gvfs.NewStrictMem()
 }
 
-// PebbleFS is a wrapper struct that implements the pebble/vfs.FS interface.
-type PebbleFS struct {
-	fs IFS
-}
-
-var _ pvfs.FS = (*PebbleFS)(nil)
-
-// NewPebbleFS creates a new pebble/vfs.FS instance.
-func NewPebbleFS(fs IFS) pvfs.FS {
-	return &PebbleFS{fs}
-}
-
-// GetFreeSpace ...
-func (p *PebbleFS) GetFreeSpace(path string) (uint64, error) {
-	return p.fs.GetFreeSpace(path)
-}
-
-// Create ...
-func (p *PebbleFS) Create(name string) (pvfs.File, error) {
-	return p.fs.Create(name)
-}
-
-// Link ...
-func (p *PebbleFS) Link(oldname, newname string) error {
-	return p.fs.Link(oldname, newname)
-}
-
-// Open ...
-func (p *PebbleFS) Open(name string, opts ...pvfs.OpenOption) (pvfs.File, error) {
-	f, err := p.fs.Open(name)
-	if err != nil {
-		return nil, err
-	}
-	for _, opt := range opts {
-		opt.Apply(f)
-	}
-	return f, nil
-}
-
-// OpenDir ...
-func (p *PebbleFS) OpenDir(name string) (pvfs.File, error) {
-	return p.fs.OpenDir(name)
-}
-
-// Remove ...
-func (p *PebbleFS) Remove(name string) error {
-	return p.fs.Remove(name)
-}
-
-// RemoveAll ...
-func (p *PebbleFS) RemoveAll(name string) error {
-	return p.fs.RemoveAll(name)
-}
-
-// Rename ...
-func (p *PebbleFS) Rename(oldname, newname string) error {
-	return p.fs.Rename(oldname, newname)
-}
-
-// ReuseForWrite ...
-func (p *PebbleFS) ReuseForWrite(oldname, newname string) (pvfs.File, error) {
-	return p.fs.ReuseForWrite(oldname, newname)
-}
-
-// MkdirAll ...
-func (p *PebbleFS) MkdirAll(dir string, perm os.FileMode) error {
-	return p.fs.MkdirAll(dir, perm)
-}
-
-// Lock ...
-func (p *PebbleFS) Lock(name string) (io.Closer, error) {
-	return p.fs.Lock(name)
-}
-
-// List ...
-func (p *PebbleFS) List(dir string) ([]string, error) {
-	return p.fs.List(dir)
-}
-
-// Stat ...
-func (p *PebbleFS) Stat(name string) (os.FileInfo, error) {
-	return p.fs.Stat(name)
-}
-
-// PathBase ...
-func (p *PebbleFS) PathBase(path string) string {
-	return p.fs.PathBase(path)
-}
-
-// PathJoin ...
-func (p *PebbleFS) PathJoin(elem ...string) string {
-	return p.fs.PathJoin(elem...)
-}
-
-// PathDir ...
-func (p *PebbleFS) PathDir(path string) string {
-	return p.fs.PathDir(path)
-}
-
 // IsNotExist returns a boolean value indicating whether the specified error is
 // to indicate that a file or directory does not exist.
 func IsNotExist(err error) bool {
-	return oserror.IsNotExist(err)
+	return errors.Is(err, fs.ErrNotExist)
 }
 
 // IsExist returns a boolean value indicating whether the specified error is to
 // indicate that a file or directory already exists.
 func IsExist(err error) bool {
-	return oserror.IsExist(err)
+	return errors.Is(err, fs.ErrExist)
 }
 
 // TempDir returns the directory use for storing temporary files.

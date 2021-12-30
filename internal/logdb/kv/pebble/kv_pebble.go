@@ -197,7 +197,7 @@ func openPebbleDB(config config.LogDBConfig, callback kv.LogDBCallback,
 		Logger:                      PebbleLogger,
 	}
 	if fs != vfs.DefaultFS {
-		opts.FS = vfs.NewPebbleFS(fs)
+		opts.FS = NewPebbleFS(fs)
 	}
 	kv := &KV{
 		ro:       ro,
