@@ -20,11 +20,11 @@ linters:
 
 issues:
   exclude-rules:
-    # Exclude some linters from running on tests files.
-    - path: _test\.go
-      linters:
-        - ineffassign
+  # Exclude some linters from running on tests files.
+  - path: _test\.go
+    linters:
+    - ineffassign
 
-    - linters:
-        - staticcheck
-      text: "SA4006:" #SA4006: this value of `not_used` is never used (staticcheck)
+  - linters:
+    - staticcheck
+    text: "SA4006:" #SA4006: this value of `not_used` is never used (staticcheck)

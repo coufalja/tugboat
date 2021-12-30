@@ -24,7 +24,7 @@ import (
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
-	rsm2 "github.com/coufalja/tugboat/rsm"
+	"github.com/coufalja/tugboat/rsm"
 	"github.com/coufalja/tugboat/server"
 	sm "github.com/coufalja/tugboat/statemachine"
 	"github.com/lni/goutils/logutil"
@@ -58,7 +58,7 @@ type snapshotter struct {
 	fs        vfs.IFS
 }
 
-var _ rsm2.ISnapshotter = (*snapshotter)(nil)
+var _ rsm.ISnapshotter = (*snapshotter)(nil)
 
 func newSnapshotter(clusterID uint64, nodeID uint64,
 	root server.SnapshotDirFunc, ldb raftio.ILogDB,
@@ -83,13 +83,13 @@ func (s *snapshotter) ssid(index uint64) string {
 }
 
 func (s *snapshotter) Shrunk(ss pb.Snapshot) (bool, error) {
-	return rsm2.IsShrunkSnapshotFile(s.getFilePath(ss.Index), s.fs)
+	return rsm.IsShrunkSnapshotFile(s.getFilePath(ss.Index), s.fs)
 }
 
-func (s *snapshotter) Stream(streamable rsm2.IStreamable,
-	meta rsm2.SSMeta, sink pb.IChunkSink) error {
+func (s *snapshotter) Stream(streamable rsm.IStreamable,
+	meta rsm.SSMeta, sink pb.IChunkSink) error {
 	ct := compressionType(meta.CompressionType)
-	cw := dio.NewCompressor(ct, rsm2.NewChunkWriter(sink, meta))
+	cw := dio.NewCompressor(ct, rsm.NewChunkWriter(sink, meta))
 	if err := streamable.Stream(meta.Ctx, cw); err != nil {
 		if cerr := sink.Close(); cerr != nil {
 			plog.Errorf("failed to close the sink %v", cerr)
@@ -99,16 +99,16 @@ func (s *snapshotter) Stream(streamable rsm2.IStreamable,
 	return cw.Close()
 }
 
-func (s *snapshotter) Save(savable rsm2.ISavable,
-	meta rsm2.SSMeta) (ss pb.Snapshot, env server.SSEnv, err error) {
+func (s *snapshotter) Save(savable rsm.ISavable,
+	meta rsm.SSMeta) (ss pb.Snapshot, env server.SSEnv, err error) {
 	env = s.getCustomEnv(meta)
 	if err := env.CreateTempDir(); err != nil {
 		return pb.Snapshot{}, env, err
 	}
-	files := rsm2.NewFileCollection()
+	files := rsm.NewFileCollection()
 	fp := env.GetTempFilepath()
 	ct := compressionType(meta.CompressionType)
-	w, err := rsm2.NewSnapshotWriter(fp, meta.CompressionType, s.fs)
+	w, err := rsm.NewSnapshotWriter(fp, meta.CompressionType, s.fs)
 	if err != nil {
 		return pb.Snapshot{}, env, err
 	}
@@ -119,7 +119,7 @@ func (s *snapshotter) Save(savable rsm2.ISavable,
 		if ss.Index > 0 {
 			total := cw.BytesWritten()
 			ss.Checksum = w.GetPayloadChecksum()
-			ss.FileSize = w.GetPayloadSize(total) + rsm2.HeaderSize
+			ss.FileSize = w.GetPayloadSize(total) + rsm.HeaderSize
 		}
 	}()
 	session := meta.Session.Bytes()
@@ -145,7 +145,7 @@ func (s *snapshotter) Save(savable rsm2.ISavable,
 }
 
 func (s *snapshotter) Load(ss pb.Snapshot,
-	sessions rsm2.ILoadable, asm rsm2.IRecoverable) (err error) {
+	sessions rsm.ILoadable, asm rsm.IRecoverable) (err error) {
 	fp := s.getFilePath(ss.Index)
 	fs := make([]sm.SnapshotFile, 0)
 	for _, f := range ss.Files {
@@ -155,7 +155,7 @@ func (s *snapshotter) Load(ss pb.Snapshot,
 			Metadata: f.Metadata,
 		})
 	}
-	reader, header, err := rsm2.NewSnapshotReader(fp, s.fs)
+	reader, header, err := rsm.NewSnapshotReader(fp, s.fs)
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func (s *snapshotter) Load(ss pb.Snapshot,
 	defer func() {
 		err = firstError(err, cr.Close())
 	}()
-	v := rsm2.SSVersion(header.Version)
+	v := rsm.SSVersion(header.Version)
 	if err := sessions.LoadSessions(cr, v); err != nil {
 		return err
 	}
@@ -208,10 +208,10 @@ func (s *snapshotter) Shrink(index uint64) error {
 		fp := env.GetFilepath()
 		shrunk := env.GetShrinkedFilepath()
 		plog.Infof("%s shrinking %s", s.id(), s.ssid(index))
-		if err := rsm2.ShrinkSnapshot(fp, shrunk, s.fs); err != nil {
+		if err := rsm.ShrinkSnapshot(fp, shrunk, s.fs); err != nil {
 			return err
 		}
-		return rsm2.ReplaceSnapshot(shrunk, fp, s.fs)
+		return rsm.ReplaceSnapshot(shrunk, fp, s.fs)
 	}
 	return nil
 }
@@ -237,8 +237,8 @@ func (s *snapshotter) IsNoSnapshotError(err error) bool {
 	return errors.Is(err, ErrNoSnapshot)
 }
 
-func (s *snapshotter) Commit(ss pb.Snapshot, req rsm2.SSRequest) error {
-	env := s.getCustomEnv(rsm2.SSMeta{
+func (s *snapshotter) Commit(ss pb.Snapshot, req rsm.SSRequest) error {
+	env := s.getCustomEnv(rsm.SSMeta{
 		Index:   ss.Index,
 		Request: req,
 	})
@@ -351,7 +351,7 @@ func (s *snapshotter) getEnv(index uint64) server.SSEnv {
 		s.clusterID, s.nodeID, index, s.nodeID, server.SnapshotMode, s.fs)
 }
 
-func (s *snapshotter) getCustomEnv(meta rsm2.SSMeta) server.SSEnv {
+func (s *snapshotter) getCustomEnv(meta rsm.SSMeta) server.SSEnv {
 	if meta.Request.Exported() {
 		if len(meta.Request.Path) == 0 {
 			plog.Panicf("Path is empty when exporting snapshot")

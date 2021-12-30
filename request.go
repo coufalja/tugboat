@@ -30,7 +30,7 @@ import (
 	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/logger"
 	pb "github.com/coufalja/tugboat/raftpb"
-	rsm2 "github.com/coufalja/tugboat/rsm"
+	"github.com/coufalja/tugboat/rsm"
 	sm "github.com/coufalja/tugboat/statemachine"
 	"github.com/lni/goutils/random"
 )
@@ -539,7 +539,7 @@ type pendingConfigChange struct {
 type pendingSnapshot struct {
 	mu        sync.Mutex
 	pending   *RequestState
-	snapshotC chan<- rsm2.SSRequest
+	snapshotC chan<- rsm.SSRequest
 	logicalClock
 }
 
@@ -574,7 +574,7 @@ func (l *pendingLeaderTransfer) get() (uint64, bool) {
 	return 0, false
 }
 
-func newPendingSnapshot(snapshotC chan<- rsm2.SSRequest) pendingSnapshot {
+func newPendingSnapshot(snapshotC chan<- rsm.SSRequest) pendingSnapshot {
 	return pendingSnapshot{
 		logicalClock: newLogicalClock(),
 		snapshotC:    snapshotC,
@@ -596,7 +596,7 @@ func (p *pendingSnapshot) close() {
 	}
 }
 
-func (p *pendingSnapshot) request(st rsm2.SSReqType,
+func (p *pendingSnapshot) request(st rsm.SSReqType,
 	path string, override bool, overhead uint64,
 	timeoutTick uint64) (*RequestState, error) {
 	if timeoutTick == 0 {
@@ -610,7 +610,7 @@ func (p *pendingSnapshot) request(st rsm2.SSReqType,
 	if p.snapshotC == nil {
 		return nil, ErrClusterClosed
 	}
-	ssreq := rsm2.SSRequest{
+	ssreq := rsm.SSRequest{
 		Type:               st,
 		Path:               path,
 		Key:                random.LockGuardedRand.Uint64(),
@@ -1060,7 +1060,7 @@ func (p *proposalShard) propose(session *client.Session,
 	if timeoutTick == 0 {
 		return nil, ErrTimeoutTooSmall
 	}
-	if rsm2.GetMaxBlockSize(p.cfg.EntryCompressionType) < uint64(len(cmd)) {
+	if rsm.GetMaxBlockSize(p.cfg.EntryCompressionType) < uint64(len(cmd)) {
 		return nil, ErrPayloadTooBig
 	}
 	entry := pb.Entry{
@@ -1201,5 +1201,5 @@ func (p *proposalShard) gcAt(now uint64) {
 }
 
 func preparePayload(ct config.CompressionType, cmd []byte) []byte {
-	return rsm2.GetEncoded(rsm2.ToDioType(ct), cmd, nil)
+	return rsm.GetEncoded(rsm.ToDioType(ct), cmd, nil)
 }
