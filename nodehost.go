@@ -278,7 +278,9 @@ var firstError = utils.FirstError
 
 // NewNodeHost creates a new NodeHost instance. In a typical application, it is
 // expected to have one NodeHost on each server.
-func NewNodeHost[T raftio.ITransport](nhConfig config.NodeHostConfig, transportFactory func(requestHandler raftio.MessageHandler, chunkHandler raftio.ChunkHandler) T) (*NodeHost, error) {
+func NewNodeHost[T raftio.ITransport](nhConfig config.NodeHostConfig,
+	transportFactory func(requestHandler raftio.MessageHandler, chunkHandler raftio.ChunkHandler) T) (*NodeHost, error) {
+
 	logBuildTagsAndVersion()
 	if err := nhConfig.Validate(); err != nil {
 		return nil, err
@@ -1612,12 +1614,7 @@ func (nh *NodeHost) createLogDB() error {
 	if err := nh.env.LockNodeHostDir(); err != nil {
 		return err
 	}
-	var lf config.LogDBFactory
-	if nh.nhConfig.Expert.LogDBFactory != nil {
-		lf = nh.nhConfig.Expert.LogDBFactory
-	} else {
-		lf = logdb.NewDefaultFactory()
-	}
+	lf := logdb.NewDefaultFactory()
 	name := lf.Name()
 	if err := nh.env.CheckLogDBType(nh.nhConfig, name); err != nil {
 		return err

@@ -23,7 +23,6 @@ import (
 	"reflect"
 
 	"github.com/cockroachdb/errors"
-	"github.com/coufalja/tugboat/internal/fileutil"
 	"github.com/coufalja/tugboat/internal/vfs"
 	"github.com/coufalja/tugboat/logger"
 	"github.com/coufalja/tugboat/raftio"
@@ -269,12 +268,6 @@ type NodeHostConfig struct {
 	// restarts. AddressByNodeHostID should be set to true when the RaftAddress
 	// value might change after restart.
 	RaftAddress string
-	// LogDBFactory is the factory function used for creating the Log DB instance
-	// used by NodeHost. The default zero value causes the default built-in RocksDB
-	// based Log DB implementation to be used.
-	//
-	// Deprecated: Use NodeHostConfig.Expert.LogDBFactory instead.
-	LogDBFactory LogDBFactoryFunc
 	// RaftEventListener is the listener for Raft events, such as Raft leadership
 	// change, exposed to user space. NodeHost uses a single dedicated goroutine
 	// to invoke all RaftEventListener methods one by one, CPU intensive or IO
@@ -383,9 +376,6 @@ func (c *NodeHostConfig) Validate() error {
 		c.MaxReceiveQueueSize < pb.NonCmdFieldSize+1 {
 		return errors.New("MaxReceiveSize value is too small")
 	}
-	if c.LogDBFactory != nil && c.Expert.LogDBFactory != nil {
-		return errors.New("both LogDBFactory and Expert.LogDBFactory specified")
-	}
 	validate := c.GetRaftAddressValidator()
 	if !validate(c.RaftAddress) {
 		return errors.New("invalid NodeHost address")
@@ -396,44 +386,6 @@ func (c *NodeHostConfig) Validate() error {
 		}
 	}
 	return nil
-}
-
-type defaultLogDB struct {
-	factory LogDBFactoryFunc
-}
-
-func (l *defaultLogDB) Create(nhConfig NodeHostConfig,
-	cb LogDBCallback, dirs []string, wals []string) (raftio.ILogDB, error) {
-	return l.factory(nhConfig, cb, dirs, wals)
-}
-
-func (l *defaultLogDB) Name() string {
-	fs := vfs.DefaultFS
-	dir, err := fileutil.TempDir("", "dragonboat-logdb-test", fs)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		if err := fs.RemoveAll(dir); err != nil {
-			panic(err)
-		}
-	}()
-	nhc := NodeHostConfig{
-		Expert: ExpertConfig{
-			LogDB: GetDefaultLogDBConfig(),
-			FS:    fs,
-		},
-	}
-	ldb, err := l.factory(nhc, nil, []string{dir}, []string{})
-	if err != nil {
-		plog.Panicf("failed to create ldb, %v", err)
-	}
-	defer func() {
-		if err := ldb.Close(); err != nil {
-			panic(err)
-		}
-	}()
-	return ldb.Name()
 }
 
 // Prepare sets the default value for NodeHostConfig.
@@ -459,10 +411,6 @@ func (c *NodeHostConfig) Prepare() error {
 	if c.Expert.LogDB.IsEmpty() {
 		plog.Infof("using default LogDBConfig")
 		c.Expert.LogDB = GetDefaultLogDBConfig()
-	}
-	if c.LogDBFactory != nil && c.Expert.LogDBFactory == nil {
-		c.Expert.LogDBFactory = &defaultLogDB{factory: c.LogDBFactory}
-		c.LogDBFactory = nil
 	}
 	return nil
 }
@@ -664,10 +612,6 @@ func GetDefaultExpertConfig() ExpertConfig {
 // internals of Dragonboat. Users are recommended not to set ExpertConfig
 // unless it is absoloutely necessary.
 type ExpertConfig struct {
-	// LogDBFactory is the factory function used for creating the LogDB instance
-	// used by NodeHost. When not set, the default built-in Pebble based LogDB
-	// implementation is used.
-	LogDBFactory LogDBFactory
 	// Engine is the cponfiguration for the execution engine.
 	Engine EngineConfig
 	// LogDB contains configuration options for the LogDB storage engine. LogDB

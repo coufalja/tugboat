@@ -17,8 +17,6 @@ package config
 import (
 	"reflect"
 	"testing"
-
-	"github.com/coufalja/tugboat/raftio"
 )
 
 func ExampleNodeHostConfig() {
@@ -130,26 +128,6 @@ func TestLogDBConfigMemSize(t *testing.T) {
 	c4 := GetLargeMemLogDBConfig()
 	if c4.MemorySizeMB() != 8192 {
 		t.Errorf("size %d, want 8192", c4.MemorySizeMB())
-	}
-}
-
-func TestLogDBFactoryAndExpertLogDBFactoryCanNotBeSetTogether(t *testing.T) {
-	f := func(NodeHostConfig,
-		LogDBCallback, []string, []string) (raftio.ILogDB, error) {
-		return nil, nil
-	}
-	c := NodeHostConfig{
-		RaftAddress:    "localhost:9010",
-		RTTMillisecond: 100,
-		NodeHostDir:    "/data",
-		LogDBFactory:   LogDBFactoryFunc(f),
-	}
-	if err := c.Validate(); err != nil {
-		t.Fatalf("cfg not valid")
-	}
-	c.Expert.LogDBFactory = &defaultLogDB{}
-	if err := c.Validate(); err == nil {
-		t.Fatalf("cfg not considered as invalid")
 	}
 }
 

@@ -327,13 +327,6 @@ func (env *Env) getDeploymentIDSubDirName(did uint64) string {
 	return fmt.Sprintf("%020d", did)
 }
 
-func compatibleLogDBType(saved string, name string) bool {
-	if saved == name {
-		return true
-	}
-	return name == "pebble" || saved == "pebble" || saved == "sharded-pebble" || name == "sharded-pebble"
-}
-
 func (env *Env) check(cfg config.NodeHostConfig,
 	dir string, binVer uint32, name string, dbto bool) error {
 	fn := flagFilename
@@ -350,9 +343,6 @@ func (env *Env) check(cfg config.NodeHostConfig,
 	s := raftpb.RaftDataStatus{}
 	if err := fileutil.GetFlagFileContent(dir, fn, &s, env.fs); err != nil {
 		return err
-	}
-	if !compatibleLogDBType(s.LogdbType, name) {
-		return ErrLogDBType
 	}
 	if !dbto {
 		if len(s.Hostname) > 0 && !se(s.Hostname, env.hostname) {

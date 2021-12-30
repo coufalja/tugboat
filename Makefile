@@ -155,7 +155,7 @@ test-raftpb:
 	$(GOTEST) $(PKGNAME)/raftpb
 .PHONY: test-rsm
 test-rsm:
-	$(GOTEST) $(PKGNAME)/internal/rsm
+	$(GOTEST) $(PKGNAME)/rsm
 .PHONY: test-logdb
 test-logdb:
 	$(GOTEST) $(PKGNAME)/internal/logdb
