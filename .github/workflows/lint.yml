@@ -2,6 +2,7 @@ on: [ push, pull_request ]
 name: Lint
 jobs:
   static-check:
+    if: 'false' # Skip until 1.18 supported
     runs-on: ubuntu-18.04
     steps:
     - name: Checkout code
