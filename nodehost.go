@@ -208,8 +208,8 @@ type NodeHost struct {
 		cciCh    chan struct{}
 		clusters sync.Map
 		lm       sync.Map
-		logdb    raftio.ILogDB
 	}
+	logdb  raftio.ILogDB
 	events struct {
 		leaderInfoQ *leaderInfoQueue
 		raft        raftio.IRaftEventListener
@@ -228,8 +228,6 @@ type NodeHost struct {
 	partitioned  int32
 	closed       int32
 }
-
-var _ nodeLoader = (*NodeHost)(nil)
 
 var dn = logutil.DescribeNode
 
@@ -295,7 +293,7 @@ func NewNodeHost[T raftio.ITransport, L raftio.ILogDB](nhConfig config.NodeHostC
 			return err
 		}
 		ldb := logdbFactory(nh.handleLogDBInfo, nhDir, walDir)
-		nh.mu.logdb = ldb
+		nh.logdb = ldb
 		ver := ldb.BinaryFormat()
 		if err := nh.env.CheckNodeHostDir(nh.nhConfig, ver, ldb.Name()); err != nil {
 			return err
@@ -322,7 +320,7 @@ func NewNodeHost[T raftio.ITransport, L raftio.ILogDB](nhConfig config.NodeHostC
 		return nh.env.GetSnapshotDir(nh.nhConfig.GetDeploymentID(), cid, nid)
 	}
 	nh.engine = newExecEngine(nh, nhConfig.Expert.Engine,
-		nh.nhConfig.NotifyCommit, errorInjection, nh.env, nh.mu.logdb)
+		nh.nhConfig.NotifyCommit, errorInjection, nh.env, nh.logdb)
 
 	t, err := transport.Factory(nhConfig, nh.nodes, nh.msgHandler, &transportEvent{nh}, getSnapshotDir, transportFactory)
 	if err != nil {
@@ -338,6 +336,14 @@ func NewNodeHost[T raftio.ITransport, L raftio.ILogDB](nhConfig config.NodeHostC
 	})
 	nh.logNodeHostDetails()
 	return nh, nil
+}
+
+func (nh *NodeHost) Transport() ITransport {
+	return nh.transport
+}
+
+func (nh *NodeHost) LogDB() raftio.ILogDB {
+	return nh.logdb
 }
 
 // Close stops all managed Raft nodes and releases all resources owned by the
@@ -384,9 +390,8 @@ func (nh *NodeHost) Close() {
 		nh.transport = nil
 	}
 	plog.Debugf("%s is stopping the logdb module", nh.describe())
-	if nh.mu.logdb != nil {
-		err = firstError(err, nh.mu.logdb.Close())
-		nh.mu.logdb = nil
+	if nh.logdb != nil {
+		err = firstError(err, nh.logdb.Close())
 	}
 	plog.Debugf("%s is stopping the env module", nh.describe())
 	err = firstError(err, nh.env.Close())
@@ -940,7 +945,7 @@ func (nh *NodeHost) RequestCompaction(clusterID uint64,
 	n, ok := nh.getCluster(clusterID)
 	if !ok {
 		// assume this is a node that has already been removed via RemoveData
-		done, err := nh.mu.logdb.CompactEntriesTo(clusterID, nodeID, math.MaxUint64)
+		done, err := nh.logdb.CompactEntriesTo(clusterID, nodeID, math.MaxUint64)
 		if err != nil {
 			return nil, err
 		}
@@ -1267,7 +1272,7 @@ func (nh *NodeHost) RemoveData(clusterID uint64, nodeID uint64) error {
 		return ErrClusterNotStopped
 	}
 	plog.Debugf("%s called RemoveData", dn(clusterID, nodeID))
-	if err := nh.mu.logdb.RemoveNodeData(clusterID, nodeID); err != nil {
+	if err := nh.logdb.RemoveNodeData(clusterID, nodeID); err != nil {
 		panicNow(err)
 	}
 	// mark the snapshot dir as removed
@@ -1305,7 +1310,7 @@ func (nh *NodeHost) HasNodeInfo(clusterID uint64, nodeID uint64) bool {
 	if atomic.LoadInt32(&nh.closed) != 0 {
 		return false
 	}
-	if _, err := nh.mu.logdb.GetBootstrapInfo(clusterID, nodeID); err != nil {
+	if _, err := nh.logdb.GetBootstrapInfo(clusterID, nodeID); err != nil {
 		if errors.Is(err, raftio.ErrNoBootstrapInfo) {
 			return false
 		}
@@ -1329,7 +1334,7 @@ func (nh *NodeHost) GetNodeHostInfo(opt NodeHostInfoOption) *NodeHostInfo {
 		return nil
 	}
 	if !opt.SkipLogInfo {
-		logInfo, err := nh.mu.logdb.ListNodeInfo()
+		logInfo, err := nh.logdb.ListNodeInfo()
 		if err != nil {
 			panicNow(err)
 		}
@@ -1428,7 +1433,7 @@ func (nh *NodeHost) getClusterSetIndex() uint64 {
 func (nh *NodeHost) bootstrapCluster(initialMembers map[uint64]Target,
 	join bool, cfg config.Config,
 	smType pb.StateMachineType) (map[uint64]string, bool, error) {
-	bi, err := nh.mu.logdb.GetBootstrapInfo(cfg.ClusterID, cfg.NodeID)
+	bi, err := nh.logdb.GetBootstrapInfo(cfg.ClusterID, cfg.NodeID)
 	if errors.Is(err, raftio.ErrNoBootstrapInfo) {
 		if !join && len(initialMembers) == 0 {
 			return nil, false, ErrClusterNotBootstrapped
@@ -1438,7 +1443,7 @@ func (nh *NodeHost) bootstrapCluster(initialMembers map[uint64]Target,
 			members = initialMembers
 		}
 		bi = pb.NewBootstrapInfo(join, smType, initialMembers)
-		err := nh.mu.logdb.SaveBootstrapInfo(cfg.ClusterID, cfg.NodeID, bi)
+		err := nh.logdb.SaveBootstrapInfo(cfg.ClusterID, cfg.NodeID, bi)
 		if err != nil {
 			return nil, false, err
 		}
@@ -1503,9 +1508,9 @@ func (nh *NodeHost) startCluster(initialMembers map[uint64]Target,
 	getSnapshotDir := func(cid uint64, nid uint64) string {
 		return nh.env.GetSnapshotDir(did, cid, nid)
 	}
-	logReader := logdb.NewLogReader(clusterID, nodeID, nh.mu.logdb)
+	logReader := logdb.NewLogReader(clusterID, nodeID, nh.logdb)
 	ss := newSnapshotter(clusterID, nodeID,
-		getSnapshotDir, nh.mu.logdb, logReader, nh.fs)
+		getSnapshotDir, nh.logdb, logReader, nh.fs)
 	logReader.SetCompactor(ss)
 	if err := ss.processOrphans(); err != nil {
 		panicNow(err)
@@ -1526,7 +1531,7 @@ func (nh *NodeHost) startCluster(initialMembers map[uint64]Target,
 		nh.sendMessage,
 		nh.nodes,
 		nh.requestPools[nodeID%requestPoolShards],
-		nh.mu.logdb,
+		nh.logdb,
 		nh.getLogDBMetrics(shard),
 		nh.events.sys)
 	if err != nil {
@@ -1805,7 +1810,7 @@ func (nh *NodeHost) describe() string {
 
 func (nh *NodeHost) logNodeHostDetails() {
 	plog.Infof("transport type: %s", nh.transport.Name())
-	plog.Infof("logdb type: %s", nh.mu.logdb.Name())
+	plog.Infof("logdb type: %s", nh.logdb.Name())
 	plog.Infof("nodehost address: %s", nh.nhConfig.RaftAddress)
 }
 

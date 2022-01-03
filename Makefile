@@ -98,16 +98,10 @@ TEST_OPTIONS=test $(GOCMDTAGS) -timeout=2400s -count=1 $(VERBOSE) \
 dragonboat-test: test-raft test-raftpb test-rsm test-logdb    \
 	test-multiraft test-config test-client test-server test-fs   	 \
 	test-id test-utils
-.PHONY: ci-test
-ci-test: test-raft test-raftpb test-rsm test-logdb 		       \
-  test-config test-client test-server test-tests test-fs 				 \
-	test-id test-utils
 .PHONY: test
 test: dragonboat-test test-tests
 .PHONY: dev-test
 dev-test: test test-plugins
-.PHONY: actions-test
-actions-test: ci-test test-cov
 
 ###############################################################################
 # build unit tests
@@ -158,7 +152,7 @@ test-rsm:
 	$(GOTEST) $(PKGNAME)/rsm
 .PHONY: test-logdb
 test-logdb:
-	$(GOTEST) $(PKGNAME)/internal/logdb
+	$(GOTEST) $(PKGNAME)/logdb
 .PHONY: test-multiraft
 test-multiraft:
 	$(GOTEST) $(PKGNAME)
