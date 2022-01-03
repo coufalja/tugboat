@@ -370,7 +370,7 @@ func (env *Env) createFlagFile(cfg config.NodeHostConfig,
 		Hostname:        env.hostname,
 		DeploymentId:    cfg.GetDeploymentID(),
 		StepWorkerCount: cfg.Expert.Engine.ExecShards,
-		LogdbShardCount: cfg.Expert.LogDB.Shards,
+		LogdbShardCount: cfg.Expert.Engine.ExecShards,
 		MaxSessionCount: LRUMaxSessionCount,
 		EntryBatchSize:  LogDBEntryBatchSize,
 	}

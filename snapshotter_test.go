@@ -1,3 +1,5 @@
+//go:build fix
+
 // Copyright 2017-2021 Lei Ni (nilei81@gmail.com) and other contributors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,7 +13,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 package tugboat
 
 import (
@@ -24,8 +25,8 @@ import (
 
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/fileutil"
-	"github.com/coufalja/tugboat/internal/logdb"
 	"github.com/coufalja/tugboat/internal/vfs"
+	"github.com/coufalja/tugboat/logdb"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	"github.com/coufalja/tugboat/rsm"

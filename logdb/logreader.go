@@ -38,6 +38,7 @@ import (
 	"unsafe"
 
 	"github.com/coufalja/tugboat/internal/raft"
+	"github.com/coufalja/tugboat/logger"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	"github.com/lni/goutils/logutil"
@@ -47,6 +48,7 @@ const (
 	maxEntrySliceSize uint64 = 4 * 1024 * 1024
 )
 
+var plog = logger.GetLogger("logdb")
 var dn = logutil.DescribeNode
 
 // LogReader is the struct used to manage logs that have already been persisted

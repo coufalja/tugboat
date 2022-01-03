@@ -21,6 +21,12 @@ import (
 	pb "github.com/coufalja/tugboat/raftpb"
 )
 
+type noopCompactor struct{}
+
+func (noopCompactor) Compact(uint64) error { return nil }
+
+var testCompactor = &noopCompactor{}
+
 func TestLogReaderNewLogReader(t *testing.T) {
 	lr := NewLogReader(1, 1, nil)
 	if lr.length != 1 {

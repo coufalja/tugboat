@@ -28,9 +28,9 @@ import (
 	"github.com/coufalja/tugboat/config"
 	"github.com/coufalja/tugboat/internal/id"
 	"github.com/coufalja/tugboat/internal/invariants"
-	"github.com/coufalja/tugboat/internal/logdb"
 	"github.com/coufalja/tugboat/internal/utils"
 	"github.com/coufalja/tugboat/internal/vfs"
+	"github.com/coufalja/tugboat/logdb"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	"github.com/coufalja/tugboat/rsm"
@@ -237,8 +237,9 @@ var firstError = utils.FirstError
 
 // NewNodeHost creates a new NodeHost instance. In a typical application, it is
 // expected to have one NodeHost on each server.
-func NewNodeHost[T raftio.ITransport](nhConfig config.NodeHostConfig,
-	transportFactory func(requestHandler raftio.MessageHandler, chunkHandler raftio.ChunkHandler) T) (*NodeHost, error) {
+func NewNodeHost[T raftio.ITransport, L raftio.ILogDB](nhConfig config.NodeHostConfig,
+	transportFactory func(requestHandler raftio.MessageHandler, chunkHandler raftio.ChunkHandler) T,
+	logdbFactory func(logdb.LogDBCallback, string, string) L) (*NodeHost, error) {
 
 	logBuildTagsAndVersion()
 	if err := nhConfig.Validate(); err != nil {
@@ -283,7 +284,26 @@ func NewNodeHost[T raftio.ITransport](nhConfig config.NodeHostConfig,
 	}()
 	did := nh.nhConfig.GetDeploymentID()
 	plog.Infof("DeploymentID set to %d", did)
-	if err := nh.createLogDB(); err != nil {
+
+	createLogDB := func() error {
+		did := nh.nhConfig.GetDeploymentID()
+		nhDir, walDir, err := nh.env.CreateNodeHostDir(did)
+		if err != nil {
+			return err
+		}
+		if err := nh.env.LockNodeHostDir(); err != nil {
+			return err
+		}
+		ldb := logdbFactory(nh.handleLogDBInfo, nhDir, walDir)
+		nh.mu.logdb = ldb
+		ver := ldb.BinaryFormat()
+		if err := nh.env.CheckNodeHostDir(nh.nhConfig, ver, ldb.Name()); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if err := createLogDB(); err != nil {
 		nh.Close()
 		return nil, err
 	}
@@ -1490,8 +1510,7 @@ func (nh *NodeHost) startCluster(initialMembers map[uint64]Target,
 	if err := ss.processOrphans(); err != nil {
 		panicNow(err)
 	}
-	p := server.NewDoubleFixedPartitioner(nh.nhConfig.Expert.Engine.ExecShards,
-		nh.nhConfig.Expert.LogDB.Shards)
+	p := server.NewDoubleFixedPartitioner(nh.nhConfig.Expert.Engine.ExecShards, nh.nhConfig.Expert.Engine.ExecShards)
 	shard := p.GetPartitionID(clusterID)
 	rn, err := newNode(peers,
 		im,
@@ -1564,37 +1583,8 @@ func (nh *NodeHost) createPools() {
 	}
 }
 
-func (nh *NodeHost) createLogDB() error {
-	did := nh.nhConfig.GetDeploymentID()
-	nhDir, walDir, err := nh.env.CreateNodeHostDir(did)
-	if err != nil {
-		return err
-	}
-	if err := nh.env.LockNodeHostDir(); err != nil {
-		return err
-	}
-	lf := logdb.NewDefaultFactory()
-	name := lf.Name()
-	if err := nh.env.CheckLogDBType(nh.nhConfig, name); err != nil {
-		return err
-	}
-	ldb, err := lf.Create(nh.nhConfig,
-		nh.handleLogDBInfo, []string{nhDir}, []string{walDir})
-	if err != nil {
-		return err
-	}
-	nh.mu.logdb = ldb
-	ver := ldb.BinaryFormat()
-	if err := nh.env.CheckNodeHostDir(nh.nhConfig, ver, name); err != nil {
-		return err
-	}
-	plog.Infof("logdb memory limit: %d MBytes",
-		nh.nhConfig.Expert.LogDB.MemorySizeMB())
-	return nil
-}
-
-func (nh *NodeHost) handleLogDBInfo(info config.LogDBInfo) {
-	plog.Infof("LogDB info received, shard %d, busy %t", info.Shard, info.Busy)
+func (nh *NodeHost) handleLogDBInfo(info logdb.LogDBInfo) {
+	plog.Debugf("LogDB info received, shard %d, busy %t", info.Shard, info.Busy)
 	nh.mu.Lock()
 	defer nh.mu.Unlock()
 	lm := nh.getLogDBMetrics(info.Shard)

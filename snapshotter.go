@@ -19,9 +19,9 @@ import (
 	"strconv"
 
 	"github.com/coufalja/tugboat/internal/fileutil"
-	"github.com/coufalja/tugboat/internal/logdb"
 	"github.com/coufalja/tugboat/internal/utils/dio"
 	"github.com/coufalja/tugboat/internal/vfs"
+	"github.com/coufalja/tugboat/logdb"
 	"github.com/coufalja/tugboat/raftio"
 	pb "github.com/coufalja/tugboat/raftpb"
 	"github.com/coufalja/tugboat/rsm"
