@@ -341,14 +341,17 @@ func (t *Transport[T]) SendResult(req pb.Message) (bool, FailedSend) {
 			shutdownQueue()
 		})
 	}
+
+	sq.increase(req)
+
 	if sq.rateLimited() {
 		return false, RateLimited
 	}
 	select {
 	case sq.ch <- req:
-		sq.increase(req)
 		return true, Success
 	default:
+		sq.decrease(req)
 		return false, ChanIsFull
 	}
 }
